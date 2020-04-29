@@ -1,6 +1,6 @@
 <template>
   <v-app-bar>
-    <v-toolbar-title>アークザラッド2 RTA用ダメージ計算機</v-toolbar-title>
+    <v-toolbar-title>アークザラッド2 ダメージ計算機(改)</v-toolbar-title>
     <v-spacer></v-spacer>
     <v-switch
       v-model="$vuetify.theme.dark"
