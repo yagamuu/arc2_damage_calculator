@@ -5,7 +5,7 @@
         <v-checkbox
           class="shrink mt-0"
           v-on="on"
-          v-model="enabled"
+          v-model="inputDataCheckbox"
           dense
         ></v-checkbox>
       </template>
@@ -16,7 +16,7 @@
         <v-text-field
           :label="label"
           :value="value"
-          @input="$emit('input', $event)"
+          v-model="inputData"
           @keydown="validateForm"
           @keyup="validateForm"
           @blur="validateForm"
@@ -66,10 +66,29 @@ export default class InputDataFormTextField extends Mixins(Mixin) {
   @Prop({ type: Number, default: 0 })
   value!: number;
 
+  @Prop({ type: Boolean, default: false })
+  checkbox!: boolean;
+
   enabled = false;
 
   get isDisabled() {
-    return this.hasCheckbox === true && this.enabled === false;
+    return this.hasCheckbox === true && this.inputDataCheckbox === false;
+  }
+
+  get inputData() {
+    return this.value;
+  }
+
+  set inputData(value) {
+    this.$emit("update:value", value);
+  }
+
+  get inputDataCheckbox() {
+    return this.checkbox;
+  }
+
+  set inputDataCheckbox(value) {
+    this.$emit("update:checkbox", value);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

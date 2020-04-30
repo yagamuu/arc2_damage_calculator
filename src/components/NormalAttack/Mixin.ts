@@ -23,37 +23,40 @@ export class Mixin extends Vue {
 
   setUnitName(unitName: string, key: string) {
     store.setUnitNameAction(unitName, key);
-    const unitData = unitDataList.find(data => data.name === unitName);
-    const classData = classDataList.find(
-      data => data.className === unitData?.className
-    );
-    if (classData === undefined) {
-      return;
-    }
-    const baseAttack = calc.calcParameter(
-      classData.baseAttack,
-      store.state.unitData[key].appearanceLv,
-      classData?.hasAppearanceLvAttackBonus,
-      store.state.unitData[key].lv,
-      classData?.growAttack
-    );
-    store.setBaseAttackAction(calc.fixValue(baseAttack, 1, 2499), key);
+    this.updateParam(key);
   }
 
   setLv(lv: number, key: string) {
     store.setLvAction(lv, key);
+    if (store.state.checkbox[key].appearanceLv == false) {
+        store.setAppearanceLvAction(lv, key);
+    }
+    this.updateParam(key);
   }
 
   setAppearanceLv(appearanceLv: number, key: string) {
     store.setAppearanceLvAction(appearanceLv, key);
+    this.updateParam(key);
+  }
+
+  setAppearanceLvCheckbox(appearanceLv: boolean, key: string) {
+    store.setAppearanceLvCheckboxAction(appearanceLv, key);
   }
 
   setBaseAttack(baseAttack: number, key: string) {
     store.setBaseAttackAction(baseAttack, key);
   }
 
+  setBaseAttackCheckbox(baseAttack: boolean, key: string) {
+    store.setBaseAttackCheckboxAction(baseAttack, key);
+  }
+
   setBaseDefense(baseDefense: number, key: string) {
     store.setBaseDefenseAction(baseDefense, key);
+  }
+
+  setBaseDefenseCheckbox(baseDefense: boolean, key: string) {
+    store.setBaseDefenseCheckboxAction(baseDefense, key);
   }
 
   setDebuff(debuff: number, key: string) {
@@ -146,5 +149,36 @@ export class Mixin extends Vue {
 
   setIsWeekResist(isWeekResist: boolean, key: string) {
     store.setIsWeekResistAction(isWeekResist, key);
+  }
+
+  updateParam(key: string) {
+    const unitName = store.state.unitData[key].unitName;
+    const unitData = unitDataList.find(data => data.name === unitName);
+    const classData = classDataList.find(
+      data => data.className === unitData?.className
+    );
+    if (classData === undefined) {
+      return;
+    }
+    if (store.state.checkbox[key].baseAttack == false) {
+        const baseAttack = calc.calcParameter(
+            classData.baseAttack,
+            store.state.unitData[key].appearanceLv,
+            classData?.hasAppearanceLvAttackBonus,
+            store.state.unitData[key].lv,
+            classData?.growAttack
+        );
+        store.setBaseAttackAction(calc.fixValue(baseAttack, 1, 2499), key);
+    }
+    if (store.state.checkbox[key].baseDefense == false) {
+        const baseDefense = calc.calcParameter(
+            classData.baseDefense,
+            store.state.unitData[key].appearanceLv,
+            classData?.hasAppearanceLvDefenseBonus,
+            store.state.unitData[key].lv,
+            classData?.growDefense
+        );
+        store.setBaseDefenseAction(calc.fixValue(baseDefense, 1, 2499), key);
+    }
   }
 }

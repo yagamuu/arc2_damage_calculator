@@ -33,12 +33,23 @@ const initUnitData = (): UnitData => {
   };
 };
 
+interface StateCheckboxInterface {
+  appearanceLv: boolean;
+  baseAttack: boolean;
+  baseDefense: boolean;
+}
+
 interface StateInterface {
   unitData: {
     [key: string]: UnitData;
     attack: UnitData;
     defense: UnitData;
   };
+  checkbox: {
+    [key: string]: StateCheckboxInterface;
+    attack: StateCheckboxInterface;
+    defense: StateCheckboxInterface;
+  }
   damageResult: [];
 }
 
@@ -46,6 +57,18 @@ const state: StateInterface = {
   unitData: {
     attack: initUnitData(),
     defense: initUnitData()
+  },
+  checkbox: {
+    attack: {
+      appearanceLv: false,
+      baseAttack: false,
+      baseDefense: false,
+    },
+    defense: {
+      appearanceLv: false,
+      baseAttack: false,
+      baseDefense: false,
+    }
   },
   damageResult: []
 };
@@ -144,5 +167,14 @@ export default {
   },
   setIsWeekResistAction(isWeekResist: boolean, key: string) {
     this.state.unitData[key].isWeekResist = isWeekResist;
-  }
+  },
+  setAppearanceLvCheckboxAction(appearanceLv: boolean, key: string) {
+    this.state.checkbox[key].appearanceLv = appearanceLv;
+  },
+  setBaseAttackCheckboxAction(baseAttack: boolean, key: string) {
+    this.state.checkbox[key].baseAttack = baseAttack;
+  },
+  setBaseDefenseCheckboxAction(baseDefense: boolean, key: string) {
+    this.state.checkbox[key].baseDefense = baseDefense;
+  },
 };

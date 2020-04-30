@@ -18,7 +18,7 @@
     <v-sheet tile>
       <v-card-text>
         test : {{ sharedState.unitData[target] }}<br />
-        name : {{ sharedState.unitData[target].unitName }}
+        checkbox : {{ sharedState.checkbox[target] }}
         <v-subheader class="pl-0">基礎パラメーター</v-subheader>
         <v-row dense>
           <v-col cols="12" sm="4" lg="4">
@@ -32,7 +32,7 @@
           <v-col cols="6" sm="4" lg="4">
             <input-data-form-text-field
               label="Lv"
-              v-model.number="lv"
+              :value.sync="lv"
               :min="1"
               :max="1000"
               tooltip="現在のLvを入力してください"
@@ -45,7 +45,8 @@
               label="登場Lv"
               :min="1"
               :max="1000"
-              v-model.number="appearanceLv"
+              :value.sync="appearanceLv"
+              :checkbox.sync="appearanceLvCheckbox"
               tooltip="ユニットの加入時点のLvを入力してください"
             />
           </v-col>
@@ -56,7 +57,8 @@
               hasCheckbox
               checkboxTooltip="任意の基本攻撃力内部値を設定したい場合チェックしてください"
               label="基本攻撃力内部値"
-              v-model.number="baseAttack"
+              :value.sync="baseAttack"
+              :checkbox.sync="baseAttackCheckbox"
               :min="1"
               :max="2499"
               messages="修正値x1"
@@ -68,7 +70,8 @@
               hasCheckbox
               checkboxTooltip="任意の基本防御力内部値を設定したい場合チェックしてください"
               label="基本防御力内部値"
-              v-model.number="baseDefense"
+              :value.sync="baseDefense"
+              :checkbox.sync="baseDefenseCheckbox"
               :min="1"
               :max="2499"
               messages="修正値x1"
@@ -191,7 +194,7 @@
           <v-col cols="12" sm="3" lg="3">
             <input-data-form-text-field
               label="武器ATT"
-              v-model.number="weaponAttack"
+              :value.sync="weaponAttack"
               :min="0"
               :max="499.8"
               tooltip="装備武器のATTを入力してください"
@@ -210,7 +213,7 @@
           <v-col cols="12" sm="3" lg="3">
             <input-data-form-text-field
               label="他装備ATT"
-              v-model.number="equipmentAttack"
+              :value.sync="equipmentAttack"
               :min="0"
               :max="499.8"
               tooltip="装備特殊効果「装備すると攻撃力上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
@@ -239,7 +242,7 @@
           <v-col cols="12" sm="3" lg="3">
             <input-data-form-text-field
               label="防具1DEF"
-              v-model.number="armorDefense1"
+              :value.sync="armorDefense1"
               :min="0"
               :max="499.8"
               tooltip="装備防具のDEFを入力してください(中央)"
@@ -248,7 +251,7 @@
           <v-col cols="12" sm="3" lg="3">
             <input-data-form-text-field
               label="防具2DEF"
-              v-model.number="armorDefense2"
+              :value.sync="armorDefense2"
               :min="0"
               :max="499.8"
               tooltip="装備防具のDEFを入力してください(下段)"
@@ -257,7 +260,7 @@
           <v-col cols="12" sm="3" lg="3">
             <input-data-form-text-field
               label="他装備DEF"
-              v-model.number="equipmentDefense"
+              :value.sync="equipmentDefense"
               :min="0"
               :max="499.8"
               tooltip="装備特殊効果「装備すると防御力上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
@@ -382,15 +385,12 @@ export default class InputDataForm extends Mixins(Mixin) {
   }
 
   get lv() {
-    //console.log("get:lv " + this.sharedState.unitData[this.target].lv);
     return this.sharedState.unitData[this.target].lv;
   }
 
   set lv(lv: number) {
-    //console.log("set:lv(before) " + lv);
     lv = calc.fixValue(lv, 1, 1000);
     this.setLv(lv, this.target);
-    //console.log("set:lv " + this.sharedState.unitData[this.target].lv);
   }
 
   get appearanceLv() {
@@ -402,6 +402,14 @@ export default class InputDataForm extends Mixins(Mixin) {
     this.setAppearanceLv(appearanceLv, this.target);
   }
 
+  get appearanceLvCheckbox() {
+    return this.sharedState.checkbox[this.target].appearanceLv;
+  }
+
+  set appearanceLvCheckbox(appearanceLv: boolean) {
+    this.setAppearanceLvCheckbox(appearanceLv, this.target);
+  }
+
   get baseAttack() {
     return this.sharedState.unitData[this.target].baseAttack;
   }
@@ -411,6 +419,14 @@ export default class InputDataForm extends Mixins(Mixin) {
     this.setBaseAttack(baseAttack, this.target);
   }
 
+  get baseAttackCheckbox() {
+    return this.sharedState.checkbox[this.target].baseAttack;
+  }
+
+  set baseAttackCheckbox(baseAttack: boolean) {
+    this.setBaseAttackCheckbox(baseAttack, this.target);
+  }
+
   get baseDefense() {
     return this.sharedState.unitData[this.target].baseDefense;
   }
@@ -418,6 +434,14 @@ export default class InputDataForm extends Mixins(Mixin) {
   set baseDefense(baseDefense: number) {
     baseDefense = calc.fixValue(baseDefense, 1, 2499);
     this.setBaseDefense(baseDefense, this.target);
+  }
+
+  get baseDefenseCheckbox() {
+    return this.sharedState.checkbox[this.target].baseDefense;
+  }
+
+  set baseDefenseCheckbox(baseDefense: boolean) {
+    this.setBaseDefenseCheckbox(baseDefense, this.target);
   }
 
   get debuff() {
