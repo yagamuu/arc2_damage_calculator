@@ -49,7 +49,7 @@ interface StateInterface {
     [key: string]: StateCheckboxInterface;
     attack: StateCheckboxInterface;
     defense: StateCheckboxInterface;
-  }
+  };
   damageResult: [];
 }
 
@@ -60,14 +60,14 @@ const state: StateInterface = {
   },
   checkbox: {
     attack: {
-      appearanceLv: false,
+      appearanceLv: true,
       baseAttack: false,
-      baseDefense: false,
+      baseDefense: false
     },
     defense: {
-      appearanceLv: false,
+      appearanceLv: true,
       baseAttack: false,
-      baseDefense: false,
+      baseDefense: false
     }
   },
   damageResult: []
@@ -176,5 +176,5 @@ export default {
   },
   setBaseDefenseCheckboxAction(baseDefense: boolean, key: string) {
     this.state.checkbox[key].baseDefense = baseDefense;
-  },
+  }
 };

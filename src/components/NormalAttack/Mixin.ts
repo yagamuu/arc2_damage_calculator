@@ -1,17 +1,20 @@
 import Vue from "vue";
-import Component from "vue-class-component";
+import { Component, Watch } from "vue-property-decorator";
 import store from "./store";
 import * as calc from "@/util/calc";
 import unitDataList from "@/assets/unitData.json";
 import classDataList from "@/assets/classData.json";
+import initUnitLvList from "@/assets/initUnitLv.json";
 import { ClassData } from "@/types";
 
 @Component
 export class Mixin extends Vue {
   privateState = {};
   sharedState = store.state;
+  unitDataList = unitDataList;
   classDataList: Array<ClassData> = classDataList;
   unitNameList = [...unitDataList].map(value => value.name);
+  initUnitLvList = initUnitLvList;
 
   initUnitData() {
     store.initUnitDataAction();
@@ -23,13 +26,14 @@ export class Mixin extends Vue {
 
   setUnitName(unitName: string, key: string) {
     store.setUnitNameAction(unitName, key);
+    this.updateLvAndCheckboxFromUnitName(key);
     this.updateParam(key);
   }
 
   setLv(lv: number, key: string) {
     store.setLvAction(lv, key);
     if (store.state.checkbox[key].appearanceLv == false) {
-        store.setAppearanceLvAction(lv, key);
+      store.setAppearanceLvAction(lv, key);
     }
     this.updateParam(key);
   }
@@ -153,7 +157,7 @@ export class Mixin extends Vue {
 
   updateParam(key: string) {
     const unitName = store.state.unitData[key].unitName;
-    const unitData = unitDataList.find(data => data.name === unitName);
+    const unitData = this.unitDataList.find(data => data.name === unitName);
     const classData = classDataList.find(
       data => data.className === unitData?.className
     );
@@ -161,24 +165,51 @@ export class Mixin extends Vue {
       return;
     }
     if (store.state.checkbox[key].baseAttack == false) {
-        const baseAttack = calc.calcParameter(
-            classData.baseAttack,
-            store.state.unitData[key].appearanceLv,
-            classData?.hasAppearanceLvAttackBonus,
-            store.state.unitData[key].lv,
-            classData?.growAttack
-        );
-        store.setBaseAttackAction(calc.fixValue(baseAttack, 1, 2499), key);
+      const baseAttack = calc.calcParameter(
+        classData.baseAttack,
+        store.state.unitData[key].appearanceLv,
+        classData?.hasAppearanceLvAttackBonus,
+        store.state.unitData[key].lv,
+        classData?.growAttack
+      );
+      store.setBaseAttackAction(calc.fixValue(baseAttack, 1, 2499), key);
     }
     if (store.state.checkbox[key].baseDefense == false) {
-        const baseDefense = calc.calcParameter(
-            classData.baseDefense,
-            store.state.unitData[key].appearanceLv,
-            classData?.hasAppearanceLvDefenseBonus,
-            store.state.unitData[key].lv,
-            classData?.growDefense
-        );
-        store.setBaseDefenseAction(calc.fixValue(baseDefense, 1, 2499), key);
+      const baseDefense = calc.calcParameter(
+        classData.baseDefense,
+        store.state.unitData[key].appearanceLv,
+        classData?.hasAppearanceLvDefenseBonus,
+        store.state.unitData[key].lv,
+        classData?.growDefense
+      );
+      store.setBaseDefenseAction(calc.fixValue(baseDefense, 1, 2499), key);
     }
+  }
+
+  updateLvAndCheckboxFromUnitName(key: string) {
+    const unitName = store.state.unitData[key].unitName;
+    const unitData = this.unitDataList.find(data => data.name === unitName);
+
+    if (unitData?.bookLv) {
+      store.setLvAction(unitData.bookLv, key);
+      store.setAppearanceLvAction(unitData.bookLv, key);
+      store.setAppearanceLvCheckboxAction(false, key);
+      return;
+    }
+
+    const initUnitLv = initUnitLvList.find(data => data.unitName === unitName)
+      ?.lv;
+    if (!initUnitLv) {
+      return;
+    }
+    store.setLvAction(initUnitLv, key);
+    store.setAppearanceLvAction(initUnitLv, key);
+    store.setAppearanceLvCheckboxAction(true, key);
+  }
+
+  @Watch("sharedState.unitData", { deep: true, immediate: true })
+  onChangeUnitData(value: object) {
+    console.log("changeUnitData");
+    console.log(value);
   }
 }

@@ -61,7 +61,7 @@
               :checkbox.sync="baseAttackCheckbox"
               :min="1"
               :max="2499"
-              messages="修正値x1"
+              :messages="baseAttackMessage"
               tooltip="ユニットの基本攻撃力内部値を入力してください<br>※初期値はユニット、Lv、登場Lvから自動算出されます"
             />
           </v-col>
@@ -74,7 +74,7 @@
               :checkbox.sync="baseDefenseCheckbox"
               :min="1"
               :max="2499"
-              messages="修正値x1"
+              :messages="baseDefenseMessage"
               tooltip="ユニットの基本防御力内部値を入力してください<br />※初期値はユニット、Lv、登場Lvから自動算出されます"
             />
           </v-col>
@@ -628,6 +628,28 @@ export default class InputDataForm extends Mixins(Mixin) {
 
   set isWeekResist(isWeekResist: boolean) {
     this.setIsWeekResist(isWeekResist, this.target);
+  }
+
+  get baseAttackMessage() {
+    const unitName = this.sharedState.unitData[this.target].unitName;
+    const unitData = this.unitDataList.find(data => data.name === unitName);
+
+    if (!unitData?.basicAttackModifier) {
+      return "修正値x？";
+    }
+
+    return "修正値x" + unitData?.basicAttackModifier;
+  }
+
+  get baseDefenseMessage() {
+    const unitName = this.sharedState.unitData[this.target].unitName;
+    const unitData = this.unitDataList.find(data => data.name === unitName);
+
+    if (!unitData?.basicDefenseModifier) {
+      return "修正値x？";
+    }
+
+    return "修正値x" + unitData?.basicDefenseModifier;
   }
 }
 </script>
