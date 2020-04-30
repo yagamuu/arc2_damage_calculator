@@ -16,7 +16,10 @@
         <v-text-field
           :label="label"
           :value="value"
-          v-on:input="$emit('input', $event)"
+          @input="$emit('input', $event)"
+          @keydown="validateForm"
+          @keyup="validateForm"
+          @blur="validateForm"
           type="number"
           :min="min"
           :max="max"
@@ -67,6 +70,19 @@ export default class InputDataFormTextField extends Mixins(Mixin) {
 
   get isDisabled() {
     return this.hasCheckbox === true && this.enabled === false;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  validateForm(event: any) {
+    if (event.target.value > this.max) {
+      event.target.value = this.max;
+      event.preventDefault();
+    }
+
+    if (event.target.value < this.min) {
+      event.target.value = this.min;
+      event.preventDefault();
+    }
   }
 }
 </script>
