@@ -18,14 +18,9 @@
         <tbody>
           <tr v-for="(item, i) in 6" :key="i">
             <td class="text-center">{{ i }}</td>
-            <td class="text-center">****</td>
-            <td class="text-center">****</td>
-            <td class="text-center">****</td>
-            <td class="text-center">****</td>
-            <td class="text-center">****</td>
-            <td class="text-center">****</td>
-            <td class="text-center">****</td>
-            <td class="text-center">****</td>
+            <td class="text-center" v-for="(item2, j) in 8" :key="j">
+              {{ sharedState.damageResult[j][i] }}
+            </td>
           </tr>
         </tbody>
       </template>
@@ -35,9 +30,12 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import store from "./store";
 
 @Component({
   components: {}
 })
-export default class Description extends Vue {}
+export default class Description extends Vue {
+  sharedState = store.state;
+}
 </script>

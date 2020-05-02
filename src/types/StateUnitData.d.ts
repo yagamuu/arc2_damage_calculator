@@ -1,0 +1,30 @@
+export interface StateUnitData {
+  unitName: string;
+  lv: number;
+  appearanceLv: number;
+  baseAttack: number;
+  baseDefense: number;
+  debuff: number;
+  attackBuff: number;
+  defenseBuff: number;
+  isWeekEnemy: boolean;
+  isPoison: boolean;
+  isNoWeapon: boolean;
+  isNoArmor: boolean;
+  isCritical: boolean;
+  isBonusToFlyable: boolean;
+  weaponAttack: number;
+  weaponElement: number;
+  equipmentAttack: number;
+  equipmentSlayer: number;
+  armorDefense1: number;
+  armorDefense2: number;
+  equipmentDefense: number;
+  equipmentGuard: number;
+  weaponSkillLv: number;
+  charge: number;
+  direction: number;
+  isDying: boolean;
+  isWeekElement: boolean;
+  isWeekResist: boolean;
+}

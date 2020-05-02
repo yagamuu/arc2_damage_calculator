@@ -17,8 +17,6 @@
     </v-toolbar>
     <v-sheet tile>
       <v-card-text>
-        test : {{ sharedState.unitData[target] }}<br />
-        checkbox : {{ sharedState.checkbox[target] }}
         <v-subheader class="pl-0">基礎パラメーター</v-subheader>
         <v-row dense>
           <v-col cols="12" sm="4" lg="4">
@@ -376,6 +374,28 @@ export default class InputDataForm extends Mixins(Mixin) {
     return formItems;
   }
 
+  get baseAttackMessage() {
+    const unitName = this.sharedState.unitData[this.target].unitName;
+    const unitData = this.unitDataList.find(data => data.name === unitName);
+
+    if (!unitData?.basicAttackModifier) {
+      return "修正値x？";
+    }
+
+    return "修正値x" + unitData?.basicAttackModifier;
+  }
+
+  get baseDefenseMessage() {
+    const unitName = this.sharedState.unitData[this.target].unitName;
+    const unitData = this.unitDataList.find(data => data.name === unitName);
+
+    if (!unitData?.basicDefenseModifier) {
+      return "修正値x？";
+    }
+
+    return "修正値x" + unitData?.basicDefenseModifier;
+  }
+
   get unitName() {
     return this.sharedState.unitData[this.target].unitName;
   }
@@ -628,28 +648,6 @@ export default class InputDataForm extends Mixins(Mixin) {
 
   set isWeekResist(isWeekResist: boolean) {
     this.setIsWeekResist(isWeekResist, this.target);
-  }
-
-  get baseAttackMessage() {
-    const unitName = this.sharedState.unitData[this.target].unitName;
-    const unitData = this.unitDataList.find(data => data.name === unitName);
-
-    if (!unitData?.basicAttackModifier) {
-      return "修正値x？";
-    }
-
-    return "修正値x" + unitData?.basicAttackModifier;
-  }
-
-  get baseDefenseMessage() {
-    const unitName = this.sharedState.unitData[this.target].unitName;
-    const unitData = this.unitDataList.find(data => data.name === unitName);
-
-    if (!unitData?.basicDefenseModifier) {
-      return "修正値x？";
-    }
-
-    return "修正値x" + unitData?.basicDefenseModifier;
   }
 }
 </script>

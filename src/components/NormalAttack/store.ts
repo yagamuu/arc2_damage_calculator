@@ -1,6 +1,7 @@
-import { UnitData } from "@/types";
+import { StateUnitData, StateInterface } from "@/types";
+import { initDamageResult } from "@/util/calc";
 
-const initUnitData = (): UnitData => {
+const initUnitData = (): StateUnitData => {
   return {
     unitName: "アーク",
     lv: 47,
@@ -33,26 +34,6 @@ const initUnitData = (): UnitData => {
   };
 };
 
-interface StateCheckboxInterface {
-  appearanceLv: boolean;
-  baseAttack: boolean;
-  baseDefense: boolean;
-}
-
-interface StateInterface {
-  unitData: {
-    [key: string]: UnitData;
-    attack: UnitData;
-    defense: UnitData;
-  };
-  checkbox: {
-    [key: string]: StateCheckboxInterface;
-    attack: StateCheckboxInterface;
-    defense: StateCheckboxInterface;
-  };
-  damageResult: [];
-}
-
 const state: StateInterface = {
   unitData: {
     attack: initUnitData(),
@@ -70,7 +51,7 @@ const state: StateInterface = {
       baseDefense: false
     }
   },
-  damageResult: []
+  damageResult: initDamageResult()
 };
 
 export default {
@@ -176,5 +157,8 @@ export default {
   },
   setBaseDefenseCheckboxAction(baseDefense: boolean, key: string) {
     this.state.checkbox[key].baseDefense = baseDefense;
+  },
+  setDamageResultAction(damageResult: number[][]) {
+    this.state.damageResult = damageResult;
   }
 };

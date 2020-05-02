@@ -2,6 +2,7 @@ import Vue from "vue";
 import { Component, Watch } from "vue-property-decorator";
 import store from "./store";
 import * as calc from "@/util/calc";
+import * as find from "@/util/find";
 import unitDataList from "@/assets/unitData.json";
 import classDataList from "@/assets/classData.json";
 import initUnitLvList from "@/assets/initUnitLv.json";
@@ -155,6 +156,10 @@ export class Mixin extends Vue {
     store.setIsWeekResistAction(isWeekResist, key);
   }
 
+  setDamageResult(damageResult: number[][]) {
+    store.setDamageResultAction(damageResult);
+  }
+
   updateParam(key: string) {
     const unitName = store.state.unitData[key].unitName;
     const unitData = this.unitDataList.find(data => data.name === unitName);
@@ -207,9 +212,120 @@ export class Mixin extends Vue {
     store.setAppearanceLvCheckboxAction(true, key);
   }
 
+  updateDamageResult() {
+    const attackUnitName = store.state.unitData.attack.unitName;
+    const attackUnitData = this.unitDataList.find(
+      data => data.name === attackUnitName
+    );
+    const attackClassData = classDataList.find(
+      data => data.className === attackUnitData?.className
+    );
+
+    const defenseUnitName = store.state.unitData.defense.unitName;
+    const defenseUnitData = this.unitDataList.find(
+      data => data.name === defenseUnitName
+    );
+    const defenseClassData = classDataList.find(
+      data => data.className === defenseUnitData?.className
+    );
+
+    const baseAttack = calc.calcBasicAttack(
+      store.state,
+      attackUnitData!,
+      attackClassData!
+    );
+
+    const attack = calc.calcAttack(baseAttack, store.state);
+
+    const baseDefense = calc.calcBasicDefense(
+      store.state,
+      defenseUnitData!,
+      defenseClassData!
+    );
+
+    const defense =
+      store.state.unitData.defense.isNoArmor ||
+      !defenseUnitData?.isEquipableArmor
+        ? baseDefense
+        : calc.calcDefense(baseDefense, store.state);
+
+    let attackElement =
+      store.state.unitData.attack.weaponElement !== 0
+        ? store.state.unitData.attack.weaponElement
+        : attackUnitData?.element;
+    attackElement = store.state.unitData.attack.isBonusToFlyable
+      ? 0
+      : attackElement;
+
+    let isWeekElement = false;
+    if (
+      store.state.unitData.attack.isBonusToFlyable &&
+      defenseUnitData?.isFlyable
+    ) {
+      isWeekElement = true;
+    } else if (store.state.unitData.defense.isWeekElement) {
+      isWeekElement = true;
+    }
+
+    let isResistElement = false;
+    if (
+      attackElement !== "無" &&
+      (attackElement === defenseUnitData?.element ||
+        store.state.unitData.defense.isWeekResist)
+    ) {
+      isResistElement = true;
+    }
+
+    let directionPow = 1;
+    switch (store.state.unitData.attack.direction) {
+      case 0:
+        directionPow = defenseUnitData?.frontDamegeScale!;
+        break;
+      case 1:
+        directionPow = defenseUnitData?.sideDamegeScale!;
+        break;
+      case 2:
+        directionPow = defenseUnitData?.backDamegeScale!;
+        break;
+    }
+
+    const isSlayer =
+      find.slayerAndGuard(store.state.unitData.attack.equipmentSlayer) ===
+      defenseUnitData?.slayer
+        ? true
+        : false;
+    const isGuard =
+      find.slayerAndGuard(store.state.unitData.attack.equipmentGuard) ===
+      attackUnitData?.slayer
+        ? true
+        : false;
+
+    const basicDamage = calc.calcBasicDamage(
+      attack,
+      store.state.unitData.attack.baseAttack
+    );
+    const addDamage = calc.calcAddDamage(
+      basicDamage,
+      attack,
+      store.state.unitData.attack.baseAttack,
+      defense,
+      store.state.unitData.defense.isDying,
+      isWeekElement
+    );
+    const damage = calc.calcConditionDamage(
+      addDamage,
+      isResistElement,
+      directionPow,
+      store.state.unitData.attack.charge,
+      isSlayer,
+      isGuard
+    );
+
+    this.setDamageResult(damage);
+  }
+
   @Watch("sharedState.unitData", { deep: true, immediate: true })
-  onChangeUnitData(value: object) {
-    console.log("changeUnitData");
-    console.log(value);
+  onChangeUnitData() {
+    this.updateDamageResult();
   }
 }
