@@ -237,7 +237,7 @@
               </v-tooltip>
             </v-col>
           </v-row>
-          <v-row dense v-if="target === 'defense'">
+          <v-row dense v-if="target === 'defense' && !isNoArmor">
             <v-col cols="12" sm="3" lg="3">
               <input-data-form-text-field
                 label="防具1DEF"
