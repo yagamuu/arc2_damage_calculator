@@ -318,17 +318,17 @@
           <v-col cols="12" sm="4" lg="4">
             <v-switch label="瀕死" inset dense v-model="isDying"></v-switch>
           </v-col>
-          <v-col cols="12" sm="4" lg="4">
+          <v-col cols="12" sm="4" lg="4" v-if="isAbleManipWeekElement">
             <v-switch
-              label="属性弱点"
+              :label="attackElement + '属性弱点'"
               inset
               dense
               v-model="isWeekElement"
             ></v-switch>
           </v-col>
-          <v-col cols="12" sm="4" lg="4">
+          <v-col cols="12" sm="4" lg="4" v-if="isAbleManipWeekResist">
             <v-switch
-              label="属性耐性"
+              :label="attackElement + '属性耐性'"
               inset
               dense
               v-model="isWeekResist"
@@ -411,6 +411,30 @@ export default class InputDataForm extends Mixins(Mixin) {
     }
 
     return true;
+  }
+
+  get isAbleManipWeekElement() {
+    return (
+      this.attackElement !== "無" &&
+      !this.sharedState.unitData.attack.isBonusToFlyable
+    );
+  }
+
+  get isAbleManipWeekResist() {
+    const unitData = find.unitData(this.sharedState.unitData.defense.unitName);
+    return (
+      this.attackElement !== "無" &&
+      !this.sharedState.unitData.attack.isBonusToFlyable &&
+      this.attackElement !== unitData?.element
+    );
+  }
+
+  get attackElement() {
+    const unitData = find.unitData(this.sharedState.unitData.attack.unitName);
+    return this.sharedState.unitData.attack.weaponElement !== 0
+      ? formItems.weaponElement[this.sharedState.unitData.attack.weaponElement]
+          .name
+      : unitData?.element;
   }
 
   get unitName() {
