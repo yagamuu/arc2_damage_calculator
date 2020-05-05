@@ -50,7 +50,7 @@
           </v-col>
         </v-row>
         <v-row dense>
-          <v-col cols="6" sm="3" lg="3">
+          <v-col cols="6" sm="3" lg="3" v-if="target === 'attack'">
             <input-data-form-text-field
               hasCheckbox
               checkboxTooltip="任意の基本攻撃力内部値を設定したい場合チェックしてください"
@@ -63,7 +63,7 @@
               tooltip="ユニットの基本攻撃力内部値を入力してください<br>※初期値はユニット、Lv、登場Lvから自動算出されます"
             />
           </v-col>
-          <v-col cols="6" sm="3" lg="3">
+          <v-col cols="6" sm="3" lg="3" v-if="target === 'defense'">
             <input-data-form-text-field
               hasCheckbox
               checkboxTooltip="任意の基本防御力内部値を設定したい場合チェックしてください"
@@ -75,6 +75,26 @@
               :messages="baseDefenseMessage"
               tooltip="ユニットの基本防御力内部値を入力してください<br />※初期値はユニット、Lv、登場Lvから自動算出されます"
             />
+          </v-col>
+          <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
+            <v-select
+              item-text="name"
+              item-value="effect"
+              :items="formItems.attackBuff"
+              v-model="attackBuff"
+              label="攻撃力上昇or低下"
+              dense
+            ></v-select>
+          </v-col>
+          <v-col cols="12" sm="3" lg="3" v-if="target === 'defense'">
+            <v-select
+              item-text="name"
+              item-value="effect"
+              :items="formItems.defenseBuff"
+              v-model="defenseBuff"
+              label="防御力上昇or低下"
+              dense
+            ></v-select>
           </v-col>
           <v-col cols="12" sm="3" lg="3">
             <v-select
@@ -88,26 +108,6 @@
           </v-col>
         </v-row>
         <v-row dense>
-          <v-col cols="12" sm="3" lg="3">
-            <v-select
-              item-text="name"
-              item-value="effect"
-              :items="formItems.attackBuff"
-              v-model="attackBuff"
-              label="攻撃力上昇or低下"
-              dense
-            ></v-select>
-          </v-col>
-          <v-col cols="12" sm="3" lg="3">
-            <v-select
-              item-text="name"
-              item-value="effect"
-              :items="formItems.defenseBuff"
-              v-model="defenseBuff"
-              label="防御力上昇or低下"
-              dense
-            ></v-select>
-          </v-col>
           <v-col cols="12" sm="3" lg="3">
             <v-switch
               label="ウィークエネミー"
@@ -130,8 +130,8 @@
           </v-col>
         </v-row>
         <v-subheader class="pl-0">装備補正</v-subheader>
-        <v-row dense>
-          <v-col cols="12" sm="3" lg="3">
+        <v-row dense style="min-height:52px;">
+          <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
             <v-switch
               class="mt-0"
               label="武器非装備or刀破斬"
@@ -141,7 +141,7 @@
               hide-details
             ></v-switch>
           </v-col>
-          <v-col cols="12" sm="3" lg="3">
+          <v-col cols="12" sm="3" lg="3" v-if="target === 'defense'">
             <v-switch
               class="mt-0"
               label="防具非装備"
@@ -151,7 +151,7 @@
               hide-details
             ></v-switch>
           </v-col>
-          <v-col cols="12" sm="3" lg="3">
+          <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
             <v-tooltip top>
               <template v-slot:activator="{ on }">
                 <v-switch
@@ -169,7 +169,7 @@
               >
             </v-tooltip>
           </v-col>
-          <v-col cols="12" sm="3" lg="3">
+          <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
             <v-tooltip top>
               <template v-slot:activator="{ on }">
                 <v-switch
@@ -188,7 +188,7 @@
             </v-tooltip>
           </v-col>
         </v-row>
-        <v-row dense>
+        <v-row dense v-if="target === 'attack'">
           <v-col cols="12" sm="3" lg="3">
             <input-data-form-text-field
               label="武器ATT"
@@ -236,7 +236,7 @@
             </v-tooltip>
           </v-col>
         </v-row>
-        <v-row dense>
+        <v-row dense v-if="target === 'defense'">
           <v-col cols="12" sm="3" lg="3">
             <input-data-form-text-field
               label="防具1DEF"
@@ -284,7 +284,7 @@
           </v-col>
         </v-row>
         <v-subheader class="pl-0">その他</v-subheader>
-        <v-row dense>
+        <v-row dense v-if="target === 'attack'">
           <v-col cols="12" sm="4" lg="4">
             <v-select
               :items="formItems.skillLevel"
@@ -307,12 +307,12 @@
               item-value="effect"
               :items="formItems.direction"
               v-model="direction"
-              label="方向"
+              label="攻撃方向"
               dense
             ></v-select>
           </v-col>
         </v-row>
-        <v-row dense>
+        <v-row dense v-if="target === 'defense'">
           <v-col cols="12" sm="4" lg="4">
             <v-switch label="瀕死" inset dense v-model="isDying"></v-switch>
           </v-col>
