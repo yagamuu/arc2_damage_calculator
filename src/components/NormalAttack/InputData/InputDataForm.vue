@@ -129,160 +129,162 @@
             ></v-switch>
           </v-col>
         </v-row>
-        <v-subheader class="pl-0">装備補正</v-subheader>
-        <v-row dense style="min-height:52px;">
-          <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
-            <v-switch
-              class="mt-0"
-              label="武器非装備or刀破斬"
-              v-model="isNoWeapon"
-              inset
-              dense
-              hide-details
-            ></v-switch>
-          </v-col>
-          <v-col cols="12" sm="3" lg="3" v-if="target === 'defense'">
-            <v-switch
-              class="mt-0"
-              label="防具非装備"
-              v-model="isNoArmor"
-              inset
-              dense
-              hide-details
-            ></v-switch>
-          </v-col>
-          <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
-            <v-tooltip top>
-              <template v-slot:activator="{ on }">
-                <v-switch
-                  class="mt-0"
-                  label="クリティカル"
-                  v-model="isCritical"
-                  v-on="on"
-                  inset
-                  dense
-                  hide-details
-                ></v-switch>
-              </template>
-              <span
-                >装備特殊効果「クリティカルが出る」を持つアイテムを装備している場合チェックしてください</span
-              >
-            </v-tooltip>
-          </v-col>
-          <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
-            <v-tooltip top>
-              <template v-slot:activator="{ on }">
-                <v-switch
-                  class="mt-0"
-                  label="飛行敵ダメ増"
-                  v-model="isBonusToFlyable"
-                  v-on="on"
-                  inset
-                  dense
-                  hide-details
-                ></v-switch>
-              </template>
-              <span
-                >装備特殊効果「飛行敵にダメージ増」を持つアイテムの装備している場合チェックしてください</span
-              >
-            </v-tooltip>
-          </v-col>
-        </v-row>
-        <v-row dense v-if="target === 'attack'">
-          <v-col cols="12" sm="3" lg="3">
-            <input-data-form-text-field
-              label="武器ATT"
-              :value.sync="weaponAttack"
-              :min="0"
-              :max="499.8"
-              tooltip="装備武器のATTを入力してください"
-            />
-          </v-col>
-          <v-col cols="12" sm="3" lg="3">
-            <v-select
-              item-text="name"
-              item-value="element"
-              v-model="weaponElement"
-              :items="formItems.weaponElement"
-              label="武器属性"
-              dense
-            ></v-select>
-          </v-col>
-          <v-col cols="12" sm="3" lg="3">
-            <input-data-form-text-field
-              label="他装備ATT"
-              :value.sync="equipmentAttack"
-              :min="0"
-              :max="499.8"
-              tooltip="装備特殊効果「装備すると攻撃力上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
-            />
-          </v-col>
-          <v-col cols="12" sm="3" lg="3">
-            <v-tooltip top>
-              <template v-slot:activator="{ on }">
-                <v-select
-                  item-text="name"
-                  item-value="id"
-                  :items="formItems.slayerAndGuard"
-                  v-model="equipmentSlayer"
-                  label="スレイヤー装備"
-                  v-on="on"
-                  dense
-                ></v-select>
-              </template>
-              <span
-                >装備特殊効果「特定敵にダメージ増」を持つスレイヤーの装備の名称を選択してください</span
-              >
-            </v-tooltip>
-          </v-col>
-        </v-row>
-        <v-row dense v-if="target === 'defense'">
-          <v-col cols="12" sm="3" lg="3">
-            <input-data-form-text-field
-              label="防具1DEF"
-              :value.sync="armorDefense1"
-              :min="0"
-              :max="499.8"
-              tooltip="装備防具のDEFを入力してください(中央)"
-            />
-          </v-col>
-          <v-col cols="12" sm="3" lg="3">
-            <input-data-form-text-field
-              label="防具2DEF"
-              :value.sync="armorDefense2"
-              :min="0"
-              :max="499.8"
-              tooltip="装備防具のDEFを入力してください(下段)"
-            />
-          </v-col>
-          <v-col cols="12" sm="3" lg="3">
-            <input-data-form-text-field
-              label="他装備DEF"
-              :value.sync="equipmentDefense"
-              :min="0"
-              :max="499.8"
-              tooltip="装備特殊効果「装備すると防御力上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
-            />
-          </v-col>
-          <v-col cols="12" sm="3" lg="3">
-            <v-tooltip top>
-              <template v-slot:activator="{ on }">
-                <v-select
-                  item-text="name"
-                  item-value="id"
-                  :items="formItems.slayerAndGuard"
-                  v-model="equipmentGuard"
-                  label="ガード装備"
-                  v-on="on"
-                  dense
-                ></v-select>
-              </template>
-              <span
-                >装備特殊効果「特定敵からダメージ減」を持つガードの装備の名称を選択してください</span
-              >
-            </v-tooltip>
-          </v-col>
-        </v-row>
+        <template v-if="target === 'attack' || isEquipableArmor">
+          <v-subheader class="pl-0">装備補正</v-subheader>
+          <v-row dense style="min-height:52px;">
+            <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
+              <v-switch
+                class="mt-0"
+                label="武器非装備or刀破斬"
+                v-model="isNoWeapon"
+                inset
+                dense
+                hide-details
+              ></v-switch>
+            </v-col>
+            <v-col cols="12" sm="3" lg="3" v-if="target === 'defense'">
+              <v-switch
+                class="mt-0"
+                label="防具非装備"
+                v-model="isNoArmor"
+                inset
+                dense
+                hide-details
+              ></v-switch>
+            </v-col>
+            <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
+              <v-tooltip top>
+                <template v-slot:activator="{ on }">
+                  <v-switch
+                    class="mt-0"
+                    label="クリティカル"
+                    v-model="isCritical"
+                    v-on="on"
+                    inset
+                    dense
+                    hide-details
+                  ></v-switch>
+                </template>
+                <span
+                  >装備特殊効果「クリティカルが出る」を持つアイテムを装備している場合チェックしてください</span
+                >
+              </v-tooltip>
+            </v-col>
+            <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
+              <v-tooltip top>
+                <template v-slot:activator="{ on }">
+                  <v-switch
+                    class="mt-0"
+                    label="飛行敵ダメ増"
+                    v-model="isBonusToFlyable"
+                    v-on="on"
+                    inset
+                    dense
+                    hide-details
+                  ></v-switch>
+                </template>
+                <span
+                  >装備特殊効果「飛行敵にダメージ増」を持つアイテムの装備している場合チェックしてください</span
+                >
+              </v-tooltip>
+            </v-col>
+          </v-row>
+          <v-row dense v-if="target === 'attack'">
+            <v-col cols="12" sm="3" lg="3">
+              <input-data-form-text-field
+                label="武器ATT"
+                :value.sync="weaponAttack"
+                :min="0"
+                :max="499.8"
+                tooltip="装備武器のATTを入力してください"
+              />
+            </v-col>
+            <v-col cols="12" sm="3" lg="3">
+              <v-select
+                item-text="name"
+                item-value="element"
+                v-model="weaponElement"
+                :items="formItems.weaponElement"
+                label="武器属性"
+                dense
+              ></v-select>
+            </v-col>
+            <v-col cols="12" sm="3" lg="3">
+              <input-data-form-text-field
+                label="他装備ATT"
+                :value.sync="equipmentAttack"
+                :min="0"
+                :max="499.8"
+                tooltip="装備特殊効果「装備すると攻撃力上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
+              />
+            </v-col>
+            <v-col cols="12" sm="3" lg="3">
+              <v-tooltip top>
+                <template v-slot:activator="{ on }">
+                  <v-select
+                    item-text="name"
+                    item-value="id"
+                    :items="formItems.slayerAndGuard"
+                    v-model="equipmentSlayer"
+                    label="スレイヤー装備"
+                    v-on="on"
+                    dense
+                  ></v-select>
+                </template>
+                <span
+                  >装備特殊効果「特定敵にダメージ増」を持つスレイヤーの装備の名称を選択してください</span
+                >
+              </v-tooltip>
+            </v-col>
+          </v-row>
+          <v-row dense v-if="target === 'defense'">
+            <v-col cols="12" sm="3" lg="3">
+              <input-data-form-text-field
+                label="防具1DEF"
+                :value.sync="armorDefense1"
+                :min="0"
+                :max="499.8"
+                tooltip="装備防具のDEFを入力してください(中央)"
+              />
+            </v-col>
+            <v-col cols="12" sm="3" lg="3">
+              <input-data-form-text-field
+                label="防具2DEF"
+                :value.sync="armorDefense2"
+                :min="0"
+                :max="499.8"
+                tooltip="装備防具のDEFを入力してください(下段)"
+              />
+            </v-col>
+            <v-col cols="12" sm="3" lg="3">
+              <input-data-form-text-field
+                label="他装備DEF"
+                :value.sync="equipmentDefense"
+                :min="0"
+                :max="499.8"
+                tooltip="装備特殊効果「装備すると防御力上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
+              />
+            </v-col>
+            <v-col cols="12" sm="3" lg="3">
+              <v-tooltip top>
+                <template v-slot:activator="{ on }">
+                  <v-select
+                    item-text="name"
+                    item-value="id"
+                    :items="formItems.slayerAndGuard"
+                    v-model="equipmentGuard"
+                    label="ガード装備"
+                    v-on="on"
+                    dense
+                  ></v-select>
+                </template>
+                <span
+                  >装備特殊効果「特定敵からダメージ減」を持つガードの装備の名称を選択してください</span
+                >
+              </v-tooltip>
+            </v-col>
+          </v-row>
+        </template>
         <v-subheader class="pl-0">その他</v-subheader>
         <v-row dense v-if="target === 'attack'">
           <v-col cols="12" sm="4" lg="4">
@@ -343,6 +345,7 @@ import { Component, Prop, Mixins } from "vue-property-decorator";
 import InputDataFormTextField from "./InputDataFormTextField.vue";
 import * as formItems from "@/assets/formItems";
 import * as calc from "@/util/calc";
+import * as find from "@/util/find";
 import { Mixin } from "../Mixin";
 
 @Component({
@@ -375,8 +378,9 @@ export default class InputDataForm extends Mixins(Mixin) {
   }
 
   get baseAttackMessage() {
-    const unitName = this.sharedState.unitData[this.target].unitName;
-    const unitData = this.unitDataList.find(data => data.name === unitName);
+    const unitData = find.unitData(
+      this.sharedState.unitData[this.target].unitName
+    );
 
     if (!unitData?.basicAttackModifier) {
       return "修正値x？";
@@ -386,14 +390,27 @@ export default class InputDataForm extends Mixins(Mixin) {
   }
 
   get baseDefenseMessage() {
-    const unitName = this.sharedState.unitData[this.target].unitName;
-    const unitData = this.unitDataList.find(data => data.name === unitName);
+    const unitData = find.unitData(
+      this.sharedState.unitData[this.target].unitName
+    );
 
     if (!unitData?.basicDefenseModifier) {
       return "修正値x？";
     }
 
     return "修正値x" + unitData?.basicDefenseModifier;
+  }
+
+  get isEquipableArmor() {
+    const unitData = find.unitData(
+      this.sharedState.unitData[this.target].unitName
+    );
+
+    if (!unitData?.isEquipableArmor) {
+      return false;
+    }
+
+    return true;
   }
 
   get unitName() {
