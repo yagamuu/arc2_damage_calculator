@@ -20,6 +20,26 @@ export const chargePow = [
   0
 ];
 
+// 熟練Lvパターン
+export const skillPattern = [
+  [100, 0, 0, 0, 0, 0, 0, 0],
+  [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+  [75, 12.5, 6.25, 0, 6.25, 0, 0, 0],
+  [62.5, 12.5, 12.5, 0, 12.5, 0, 0, 0],
+  [62.5, 12.5, 12.5, 0, 12.5, 0, 0, 0],
+  [12.5, 62.5, 12.5, 0, 6.25, 6.25, 0, 0],
+  [12.5, 62.5, 12.5, 0, 6.25, 6.25, 0, 0],
+  [12.5, 62.5, 12.5, 0, 0, 12.5, 0, 0],
+  [0, 62.5, 12.5, 12.5, 0, 12.5, 0, 0],
+  [0, 12.5, 62.5, 12.5, 0, 6.25, 6.25, 0],
+  [0, 12.5, 62.5, 12.5, 0, 6.25, 6.25, 0],
+  [0, 12.5, 62.5, 12.5, 0, 0, 12.5, 0],
+  [0, 12.5, 62.5, 12.5, 0, 0, 12.5, 0],
+  [0, 12.5, 62.5, 12.5, 0, 0, 6.25, 6.25],
+  [0, 12.5, 62.5, 12.5, 0, 0, 6.25, 6.25],
+  [0, 0, 37.5, 50, 0, 0, 0, 12.5]
+];
+
 /**
  * 正しいデータ範囲内に修正
  * @param {number} value 元の値
@@ -359,4 +379,27 @@ export const calcConditionDamage = (
     }
   }
   return damageResult;
+};
+
+/**
+ * 熟練Lvパターンの発生率を計算
+ * @param {number} skillLv 熟練Lv
+ * @param {number} index 元の値
+ * @param {number} isCritical クリティカル装備の有無
+ * @return {number} 計算結果
+ */
+export const skillPatternProbability = (
+  skillLv: number,
+  index: number,
+  isCritical: boolean
+): number => {
+  if (isCritical && index === 7) {
+    return (
+      (1 - (84 / 100) * ((100 - skillPattern[skillLv][index]) / 100)) * 100
+    );
+  }
+  if (isCritical && index < 7) {
+    return (84 / 100) * (skillPattern[skillLv][index] / 100) * 100;
+  }
+  return skillPattern[skillLv][index];
 };

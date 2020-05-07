@@ -71,6 +71,7 @@ import { Component, Mixins } from "vue-property-decorator";
 import InputDataForm from "./InputData/InputDataForm.vue";
 import { Mixin } from "./Mixin";
 import * as find from "@/util/find";
+import * as calc from "@/util/calc";
 
 @Component({
   components: { InputDataForm }
@@ -83,7 +84,7 @@ export default class InputData extends Mixins(Mixin) {
     return this.sharedState.damageResult.reduce((pre, current, index) => {
       if (
         (this.sharedState.unitData.attack.isCritical && index === 7) ||
-        find.skillPattern[skillLv][index] !== 0
+        calc.skillPattern[skillLv][index] !== 0
       ) {
         pre.push(...current);
       }
@@ -103,11 +104,12 @@ export default class InputData extends Mixins(Mixin) {
     const skillLv = this.sharedState.unitData.attack.isNoWeapon
       ? 0
       : this.sharedState.unitData.attack.weaponSkillLv;
+    const isCritical = this.sharedState.unitData.attack.isCritical;
     let result = 0;
     this.sharedState.damageResult.forEach((value, index) => {
       result +=
         ((value.reduce((pre, current) => pre + current) / 6) *
-          find.skillPattern[skillLv][index]) /
+          calc.skillPatternProbability(skillLv, index, isCritical)) /
         100;
     });
     return Math.floor(result);
