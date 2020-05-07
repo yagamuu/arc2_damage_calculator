@@ -213,13 +213,13 @@ export class Mixin extends Vue {
   }
 
   updateDamageResult() {
-    const attackUnitName = store.state.unitData.attack.unitName;
-    const attackUnitData = find.unitData(attackUnitName);
-    const attackClassData = find.classData(attackUnitName);
+    const attackUnitData = find.unitData(store.state.unitData.attack.unitName);
+    const attackClassData = find.classData(attackUnitData.className);
 
-    const defenseUnitName = store.state.unitData.defense.unitName;
-    const defenseUnitData = find.unitData(defenseUnitName);
-    const defenseClassData = find.classData(defenseUnitName);
+    const defenseUnitData = find.unitData(
+      store.state.unitData.defense.unitName
+    );
+    const defenseClassData = find.classData(defenseUnitData.className);
 
     const baseAttack = calc.calcBasicAttack(
       store.state,
