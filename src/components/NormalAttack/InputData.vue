@@ -132,17 +132,25 @@ export default class InputData extends Mixins(Mixin) {
   }
 
   saveData() {
-    if (this.dataName === "") {
-      this.snackbarText = "データ名を入力して下さい。";
+    if (this.dataName === "" && !this.selectedData) {
+      this.snackbarText = "データ名の入力、またはデータの選択をして下さい。";
       this.snackbar = true;
       return;
     }
 
     const state = JSON.parse(JSON.stringify(this.sharedState));
-    state["dataName"] = this.dataName;
-    const index = this.normalAttack.storeData.findIndex(
-      data => data?.dataName === this.dataName
-    );
+    let index = -1;
+    if (this.dataName !== "") {
+      state["dataName"] = this.dataName;
+      index = this.normalAttack.storeData.findIndex(
+        data => data?.dataName === this.dataName
+      );
+    } else {
+      state["dataName"] = this.selectedData;
+      index = this.normalAttack.storeData.findIndex(
+        data => data?.dataName === this.selectedData
+      );
+    }
     if (index !== -1) {
       this.normalAttack.storeData[index] = state;
     } else {
@@ -151,7 +159,8 @@ export default class InputData extends Mixins(Mixin) {
     const parsed = JSON.stringify(this.normalAttack);
     localStorage.setItem("normalAttack", parsed);
 
-    this.snackbarText = `データ名${this.dataName}を保存しました。`;
+    this.dataName = "";
+    this.snackbarText = `データ名${state["dataName"]}を保存しました。`;
     this.snackbar = true;
   }
 
