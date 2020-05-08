@@ -58,11 +58,35 @@
             >
           </v-toolbar>
           <v-sheet tile>
-            <v-card-text>未実装</v-card-text>
+            <v-card-text>
+              <v-text-field
+                label="データ名"
+                v-model="dataName"
+                dense
+              ></v-text-field>
+              <v-autocomplete
+                label="保存したデータ"
+                item-text="dataName"
+                :items="normalAttack.storeData"
+                v-model="selectedData"
+                dense
+              ></v-autocomplete>
+              <v-card-actions>
+                <v-btn color="red" @click="saveData">保存</v-btn>
+                <v-btn color="info" @click="loadData">読込</v-btn>
+                <v-btn color="grey" @click="deleteData">削除</v-btn>
+              </v-card-actions>
+            </v-card-text>
           </v-sheet>
         </v-card>
       </v-col>
     </v-row>
+    <v-snackbar v-model="snackbar">
+      {{ snackbarText }}
+      <v-btn color="pink" text @click="snackbar = false">
+        Close
+      </v-btn>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -72,11 +96,103 @@ import InputDataForm from "./InputData/InputDataForm.vue";
 import { Mixin } from "./Mixin";
 import * as find from "@/util/find";
 import * as calc from "@/util/calc";
+import { StateInterface } from "@/types/State";
+
+interface LocalStorageNormalAttack extends StateInterface {
+  dataName: string;
+}
+
+interface NormalAttackInterface {
+  storeData: Array<LocalStorageNormalAttack>;
+}
 
 @Component({
   components: { InputDataForm }
 })
 export default class InputData extends Mixins(Mixin) {
+  normalAttack: NormalAttackInterface = {
+    storeData: []
+  };
+  selectedData = null;
+  dataName = "";
+  snackbarText = "";
+  snackbar = false;
+
+  mounted() {
+    if (localStorage.getItem("normalAttack")) {
+      try {
+        const data = localStorage.getItem("normalAttack");
+        this.normalAttack =
+          data !== null ? JSON.parse(data) : this.normalAttack;
+      } catch (e) {
+        localStorage.removeItem("normalAttack");
+      }
+    }
+  }
+
+  saveData() {
+    if (this.dataName === "") {
+      this.snackbarText = "データ名を入力して下さい。";
+      this.snackbar = true;
+      return;
+    }
+
+    const state = JSON.parse(JSON.stringify(this.sharedState));
+    state["dataName"] = this.dataName;
+    const index = this.normalAttack.storeData.findIndex(
+      data => data?.dataName === this.dataName
+    );
+    if (index !== -1) {
+      this.normalAttack.storeData[index] = state;
+    } else {
+      this.normalAttack.storeData.push(state);
+    }
+    const parsed = JSON.stringify(this.normalAttack);
+    localStorage.setItem("normalAttack", parsed);
+
+    this.snackbarText = `データ名${this.dataName}を保存しました。`;
+    this.snackbar = true;
+  }
+
+  loadData() {
+    if (!this.selectedData) {
+      this.snackbarText = "データ名を選択して下さい。";
+      this.snackbar = true;
+      return;
+    }
+    const dataName = this.selectedData;
+    const index = this.normalAttack.storeData.findIndex(
+      data => data?.dataName === this.selectedData
+    );
+
+    const store = this.normalAttack.storeData[index];
+    Object.assign(this.sharedState, store);
+
+    this.snackbarText = `データ名${dataName}を読み込みました。`;
+    this.snackbar = true;
+  }
+
+  deleteData() {
+    if (!this.selectedData) {
+      this.snackbarText = "データ名を選択して下さい。";
+      this.snackbar = true;
+      return;
+    }
+
+    const dataName = this.selectedData;
+    const index = this.normalAttack.storeData.findIndex(
+      data => data?.dataName === this.selectedData
+    );
+    this.normalAttack.storeData.splice(index, 1);
+    this.selectedData = null;
+
+    const parsed = JSON.stringify(this.normalAttack);
+    localStorage.setItem("normalAttack", parsed);
+
+    this.snackbarText = `データ名${dataName}を削除しました。`;
+    this.snackbar = true;
+  }
+
   get possibilityDamage() {
     const skillLv = this.sharedState.unitData.attack.isNoWeapon
       ? 0
