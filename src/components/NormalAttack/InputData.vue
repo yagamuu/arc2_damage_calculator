@@ -97,6 +97,7 @@ import { Mixin } from "./Mixin";
 import * as find from "@/util/find";
 import * as calc from "@/util/calc";
 import { StateInterface } from "@/types/State";
+import clone from "clone";
 
 interface LocalStorageNormalAttack extends StateInterface {
   dataName: string;
@@ -165,8 +166,10 @@ export default class InputData extends Mixins(Mixin) {
       data => data?.dataName === this.selectedData
     );
 
-    const store = this.normalAttack.storeData[index];
-    Object.assign(this.sharedState, store);
+    const store = clone(this.normalAttack.storeData[index]);
+    this.setUnitDataAll(store.unitData.attack, store.unitData.defense);
+    this.setCheckboxAll(store.checkbox.attack, store.checkbox.defense);
+    this.setDamageResult(store.damageResult);
 
     this.snackbarText = `データ名${dataName}を読み込みました。`;
     this.snackbar = true;

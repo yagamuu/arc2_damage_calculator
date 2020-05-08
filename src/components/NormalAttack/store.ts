@@ -1,4 +1,4 @@
-import { StateUnitData, StateInterface } from "@/types";
+import { StateUnitData, StateInterface, StateCheckboxInterface } from "@/types";
 import { initDamageResult } from "@/util/calc";
 
 const initUnitData = (): StateUnitData => {
@@ -64,6 +64,10 @@ export default {
     const temp = this.state.unitData.attack;
     this.state.unitData.attack = this.state.unitData.defense;
     this.state.unitData.defense = temp;
+  },
+  setUnitDataAllAction(attack: StateUnitData, defense: StateUnitData) {
+    this.state.unitData.attack = attack;
+    this.state.unitData.defense = defense;
   },
   setUnitNameAction(unitName: string, key: string) {
     this.state.unitData[key].unitName = unitName;
@@ -148,6 +152,13 @@ export default {
   },
   setIsWeekResistAction(isWeekResist: boolean, key: string) {
     this.state.unitData[key].isWeekResist = isWeekResist;
+  },
+  setCheckboxAllAction(
+    attack: StateCheckboxInterface,
+    defense: StateCheckboxInterface
+  ) {
+    this.state.checkbox.attack = attack;
+    this.state.checkbox.defense = defense;
   },
   setAppearanceLvCheckboxAction(appearanceLv: boolean, key: string) {
     this.state.checkbox[key].appearanceLv = appearanceLv;

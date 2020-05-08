@@ -6,7 +6,7 @@ import * as find from "@/util/find";
 import unitDataList from "@/assets/unitData.json";
 import classDataList from "@/assets/classData.json";
 import initUnitLvList from "@/assets/initUnitLv.json";
-import { ClassData } from "@/types";
+import { ClassData, StateUnitData, StateCheckboxInterface } from "@/types";
 
 @Component
 export class Mixin extends Vue {
@@ -158,6 +158,17 @@ export class Mixin extends Vue {
 
   setDamageResult(damageResult: number[][]) {
     store.setDamageResultAction(damageResult);
+  }
+
+  setUnitDataAll(attack: StateUnitData, defense: StateUnitData) {
+    store.setUnitDataAllAction(attack, defense);
+  }
+
+  setCheckboxAll(
+    attack: StateCheckboxInterface,
+    defense: StateCheckboxInterface
+  ) {
+    store.setCheckboxAllAction(attack, defense);
   }
 
   updateParam(key: string) {
