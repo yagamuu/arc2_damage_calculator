@@ -40,8 +40,43 @@
             ></v-card-text>
           </v-sheet>
         </v-card>
+        <v-card outlined tile>
+          <v-toolbar dense>
+            <v-toolbar-title
+              ><v-icon class="mr-2">mdi-content-save</v-icon
+              >データ保存</v-toolbar-title
+            >
+          </v-toolbar>
+          <v-sheet tile>
+            <v-card-text>
+              <v-text-field
+                label="データ名"
+                v-model="dataName"
+                dense
+              ></v-text-field>
+              <v-autocomplete
+                label="保存したデータ"
+                item-text="dataName"
+                :items="abilityAttack.storeData"
+                v-model="selectedData"
+                dense
+              ></v-autocomplete>
+              <v-card-actions>
+                <v-btn color="red" @click="saveData">保存</v-btn>
+                <v-btn color="info" @click="loadData">読込</v-btn>
+                <v-btn color="grey" @click="deleteData">削除</v-btn>
+              </v-card-actions>
+            </v-card-text>
+          </v-sheet>
+        </v-card>
       </v-col>
     </v-row>
+    <v-snackbar v-model="snackbar">
+      {{ snackbarText }}
+      <v-btn color="pink" text @click="snackbar = false">
+        Close
+      </v-btn>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -49,11 +84,115 @@
 import { Component, Mixins } from "vue-property-decorator";
 import InputDataForm from "./InputData/InputDataForm.vue";
 import { Mixin } from "./Mixin";
+import { AbilityAttackStateInterface } from "@/types/AbilityAttack/State";
+import clone from "clone";
+
+interface LocalStorageAbilityAttack extends AbilityAttackStateInterface {
+  dataName: string;
+}
+
+interface AbilityAttackInterface {
+  storeData: Array<LocalStorageAbilityAttack>;
+}
 
 @Component({
   components: { InputDataForm }
 })
 export default class InputData extends Mixins(Mixin) {
+  abilityAttack: AbilityAttackInterface = {
+    storeData: []
+  };
+  selectedData = null;
+  dataName = "";
+  snackbarText = "";
+  snackbar = false;
+
+  mounted() {
+    if (localStorage.getItem("abilityAttack")) {
+      try {
+        const data = localStorage.getItem("abilityAttack");
+        this.abilityAttack =
+          data !== null ? JSON.parse(data) : this.abilityAttack;
+      } catch (e) {
+        localStorage.removeItem("abilityAttack");
+      }
+    }
+  }
+
+  saveData() {
+    if (this.dataName === "" && !this.selectedData) {
+      this.snackbarText = "データ名の入力、またはデータの選択をして下さい。";
+      this.snackbar = true;
+      return;
+    }
+
+    const state = JSON.parse(JSON.stringify(this.sharedState));
+    let index = -1;
+    if (this.dataName !== "") {
+      state["dataName"] = this.dataName;
+      index = this.abilityAttack.storeData.findIndex(
+        data => data?.dataName === this.dataName
+      );
+    } else {
+      state["dataName"] = this.selectedData;
+      index = this.abilityAttack.storeData.findIndex(
+        data => data?.dataName === this.selectedData
+      );
+    }
+    if (index !== -1) {
+      this.abilityAttack.storeData[index] = state;
+    } else {
+      this.abilityAttack.storeData.push(state);
+    }
+    const parsed = JSON.stringify(this.abilityAttack);
+    localStorage.setItem("abilityAttack", parsed);
+
+    this.dataName = "";
+    this.snackbarText = `データ名${state["dataName"]}を保存しました。`;
+    this.snackbar = true;
+  }
+
+  loadData() {
+    if (!this.selectedData) {
+      this.snackbarText = "データ名を選択して下さい。";
+      this.snackbar = true;
+      return;
+    }
+    const dataName = this.selectedData;
+    const index = this.abilityAttack.storeData.findIndex(
+      data => data?.dataName === this.selectedData
+    );
+
+    const store = clone(this.abilityAttack.storeData[index]);
+    this.setUnitDataAll(store.unitData.attack, store.unitData.defense);
+    this.setCheckboxAll(store.checkbox.attack, store.checkbox.defense);
+    this.setDamageResult(store.damageResult);
+
+    this.snackbarText = `データ名${dataName}を読み込みました。`;
+    this.snackbar = true;
+  }
+
+  deleteData() {
+    if (!this.selectedData) {
+      this.snackbarText = "データ名を選択して下さい。";
+      this.snackbar = true;
+      return;
+    }
+
+    const dataName = this.selectedData;
+    const index = this.abilityAttack.storeData.findIndex(
+      data => data?.dataName === this.selectedData
+    );
+    this.abilityAttack.storeData.splice(index, 1);
+    this.selectedData = null;
+
+    const parsed = JSON.stringify(this.abilityAttack);
+    localStorage.setItem("abilityAttack", parsed);
+
+    this.snackbarText = `データ名${dataName}を削除しました。`;
+    this.snackbar = true;
+  }
+
   get minDamage() {
     return this.sharedState.damageResult.reduce((a, b) => Math.min(a, b));
   }

@@ -8,6 +8,10 @@ import classDataList from "@/assets/classData.json";
 import initUnitLvList from "@/assets/initUnitLv.json";
 import abilityDataList from "@/assets/abilityData.json";
 import { ClassData } from "@/types";
+import {
+  AbilityAttackStateUnitData,
+  AbilityAttackStateCheckboxInterface
+} from "@/types/AbilityAttack/State";
 
 @Component
 export class Mixin extends Vue {
@@ -161,6 +165,20 @@ export class Mixin extends Vue {
 
   setDamageResult(damageResult: number[]) {
     store.setDamageResultAction(damageResult);
+  }
+
+  setUnitDataAll(
+    attack: AbilityAttackStateUnitData,
+    defense: AbilityAttackStateUnitData
+  ) {
+    store.setUnitDataAllAction(attack, defense);
+  }
+
+  setCheckboxAll(
+    attack: AbilityAttackStateCheckboxInterface,
+    defense: AbilityAttackStateCheckboxInterface
+  ) {
+    store.setCheckboxAllAction(attack, defense);
   }
 
   updateLvAndCheckboxFromUnitName(key: string) {
