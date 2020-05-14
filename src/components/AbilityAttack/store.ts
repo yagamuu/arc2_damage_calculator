@@ -1,11 +1,11 @@
-import { StateCheckboxInterface } from "@/types";
 import {
-  NormalAttackStateUnitData,
-  NormalAttackStateInterface
-} from "@/types/NormalAttack/State";
-import { initDamageResult } from "@/util/calc";
+  AbilityAttackStateUnitData,
+  AbilityAttackStateCheckboxInterface,
+  AbilityAttackStateInterface
+} from "@/types/AbilityAttack/State";
+import { initAbilityDamageResult } from "@/util/calc";
 
-const initUnitData = (): NormalAttackStateUnitData => {
+const initUnitData = (): AbilityAttackStateUnitData => {
   return {
     unitName: "アーク",
     lv: 47,
@@ -19,26 +19,25 @@ const initUnitData = (): NormalAttackStateUnitData => {
     isPoison: false,
     isNoWeapon: false,
     isNoArmor: false,
-    isCritical: false,
-    isBonusToFlyable: false,
     weaponAttack: 0,
-    weaponElement: 0,
     equipmentAttack: 0,
     equipmentSlayer: 0,
     armorDefense1: 0,
     armorDefense2: 0,
     equipmentDefense: 0,
     equipmentGuard: 0,
-    weaponSkillLv: 1,
-    charge: 0,
-    direction: 0,
-    isDying: false,
     isWeekElement: false,
-    isWeekResist: false
+    isWeekResist: false,
+    abilityName: "アースクエイク",
+    abilityLv: 1,
+    baseMagic: 107,
+    magicBuff: 0,
+    equipmentMagic: 0,
+    equipmentMagicDefense: 0
   };
 };
 
-const state: NormalAttackStateInterface = {
+const state: AbilityAttackStateInterface = {
   unitData: {
     attack: initUnitData(),
     defense: initUnitData()
@@ -47,15 +46,17 @@ const state: NormalAttackStateInterface = {
     attack: {
       appearanceLv: true,
       baseAttack: false,
-      baseDefense: false
+      baseDefense: false,
+      baseMagic: false
     },
     defense: {
       appearanceLv: true,
       baseAttack: false,
-      baseDefense: false
+      baseDefense: false,
+      baseMagic: false
     }
   },
-  damageResult: initDamageResult()
+  damageResult: initAbilityDamageResult()
 };
 
 export default {
@@ -70,8 +71,8 @@ export default {
     this.state.unitData.defense = temp;
   },
   setUnitDataAllAction(
-    attack: NormalAttackStateUnitData,
-    defense: NormalAttackStateUnitData
+    attack: AbilityAttackStateUnitData,
+    defense: AbilityAttackStateUnitData
   ) {
     this.state.unitData.attack = attack;
     this.state.unitData.defense = defense;
@@ -112,17 +113,8 @@ export default {
   setIsNoArmorAction(isNoArmor: boolean, key: string) {
     this.state.unitData[key].isNoArmor = isNoArmor;
   },
-  setIsCriticalAction(isCritical: boolean, key: string) {
-    this.state.unitData[key].isCritical = isCritical;
-  },
-  setIsBonusToFlyableAction(isBonusToFlyable: boolean, key: string) {
-    this.state.unitData[key].isBonusToFlyable = isBonusToFlyable;
-  },
   setWeaponAttackAction(weaponAttack: number, key: string) {
     this.state.unitData[key].weaponAttack = weaponAttack;
-  },
-  setWeaponElementAction(weaponElement: number, key: string) {
-    this.state.unitData[key].weaponElement = weaponElement;
   },
   setEquipmentAttackAction(equipmentAttack: number, key: string) {
     this.state.unitData[key].equipmentAttack = equipmentAttack;
@@ -142,18 +134,6 @@ export default {
   setEquipmentGuardAction(equipmentGuard: number, key: string) {
     this.state.unitData[key].equipmentGuard = equipmentGuard;
   },
-  setWeaponSkillLvAction(weaponSkillLv: number, key: string) {
-    this.state.unitData[key].weaponSkillLv = weaponSkillLv;
-  },
-  setChargeAction(charge: number, key: string) {
-    this.state.unitData[key].charge = charge;
-  },
-  setDirectionAction(direction: number, key: string) {
-    this.state.unitData[key].direction = direction;
-  },
-  setIsDyingAction(isDying: boolean, key: string) {
-    this.state.unitData[key].isDying = isDying;
-  },
   setIsWeekElementAction(isWeekElement: boolean, key: string) {
     this.state.unitData[key].isWeekElement = isWeekElement;
   },
@@ -161,8 +141,8 @@ export default {
     this.state.unitData[key].isWeekResist = isWeekResist;
   },
   setCheckboxAllAction(
-    attack: StateCheckboxInterface,
-    defense: StateCheckboxInterface
+    attack: AbilityAttackStateCheckboxInterface,
+    defense: AbilityAttackStateCheckboxInterface
   ) {
     this.state.checkbox.attack = attack;
     this.state.checkbox.defense = defense;
@@ -176,7 +156,28 @@ export default {
   setBaseDefenseCheckboxAction(baseDefense: boolean, key: string) {
     this.state.checkbox[key].baseDefense = baseDefense;
   },
-  setDamageResultAction(damageResult: number[][]) {
+  setDamageResultAction(damageResult: number[]) {
     this.state.damageResult = damageResult;
+  },
+  setAbilityNameAction(abilityName: string, key: string) {
+    this.state.unitData[key].abilityName = abilityName;
+  },
+  setAbilityLvAction(abilityLv: number, key: string) {
+    this.state.unitData[key].abilityLv = abilityLv;
+  },
+  setBaseMagicAction(baseMagic: number, key: string) {
+    this.state.unitData[key].baseMagic = baseMagic;
+  },
+  setBaseMagicCheckboxAction(baseMagic: boolean, key: string) {
+    this.state.checkbox[key].baseMagic = baseMagic;
+  },
+  setMagicBuffAction(magicBuff: number, key: string) {
+    this.state.unitData[key].magicBuff = magicBuff;
+  },
+  setEquipmentMagicAction(equipmentMagic: number, key: string) {
+    this.state.unitData[key].equipmentMagic = equipmentMagic;
+  },
+  setEquipmentMagicDefenseAction(equipmentMagicDefense: number, key: string) {
+    this.state.unitData[key].equipmentMagicDefense = equipmentMagicDefense;
   }
 };

@@ -8,7 +8,7 @@
         </v-tab>
         <v-tab class="mr-3">
           <v-icon class="mr-2">mdi-star-face</v-icon>
-          特殊能力(未実装)
+          特殊能力
         </v-tab>
         <v-tab-item :key="0">
           <normal-attack />

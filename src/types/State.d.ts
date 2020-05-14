@@ -1,4 +1,26 @@
-import { StateUnitData } from "@/types";
+export interface StateUnitData {
+  unitName: string;
+  lv: number;
+  appearanceLv: number;
+  baseAttack: number;
+  baseDefense: number;
+  debuff: number;
+  attackBuff: number;
+  defenseBuff: number;
+  isWeekEnemy: boolean;
+  isPoison: boolean;
+  isNoWeapon: boolean;
+  isNoArmor: boolean;
+  weaponAttack: number;
+  equipmentAttack: number;
+  equipmentSlayer: number;
+  armorDefense1: number;
+  armorDefense2: number;
+  equipmentDefense: number;
+  equipmentGuard: number;
+  isWeekElement: boolean;
+  isWeekResist: boolean;
+}
 
 export interface StateCheckboxInterface {
   appearanceLv: boolean;
@@ -17,5 +39,4 @@ export interface StateInterface {
     attack: StateCheckboxInterface;
     defense: StateCheckboxInterface;
   };
-  damageResult: number[][];
 }

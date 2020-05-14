@@ -35,13 +35,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Mixins } from "vue-property-decorator";
-import { Mixin } from "../Mixin";
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   components: {}
 })
-export default class InputDataFormTextField extends Mixins(Mixin) {
+export default class InputDataFormTextField extends Vue {
   @Prop({ type: Boolean, default: false })
   hasCheckbox!: boolean;
 

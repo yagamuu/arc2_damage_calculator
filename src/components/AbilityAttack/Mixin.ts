@@ -6,18 +6,19 @@ import * as find from "@/util/find";
 import unitDataList from "@/assets/unitData.json";
 import classDataList from "@/assets/classData.json";
 import initUnitLvList from "@/assets/initUnitLv.json";
-import * as formItems from "@/assets/formItems";
-import { ClassData, StateCheckboxInterface } from "@/types";
-import { NormalAttackStateUnitData } from "@/types/NormalAttack/State";
+import abilityDataList from "@/assets/abilityData.json";
+import { ClassData } from "@/types";
 
 @Component
 export class Mixin extends Vue {
   privateState = {};
   sharedState = store.state;
   unitDataList = unitDataList;
-  classDataList: Array<ClassData> = classDataList;
   unitNameList = [...unitDataList].map(value => value.name);
+  classDataList: Array<ClassData> = classDataList;
   initUnitLvList = initUnitLvList;
+  abilityDataList = abilityDataList;
+  abilityNameList = [...abilityDataList].map(value => value.name);
 
   initUnitData() {
     store.initUnitDataAction();
@@ -31,6 +32,14 @@ export class Mixin extends Vue {
     store.setUnitNameAction(unitName, key);
     this.updateLvAndCheckboxFromUnitName(key);
     this.updateParam(key);
+  }
+
+  setAbilityName(abilityName: string, key: string) {
+    store.setAbilityNameAction(abilityName, key);
+  }
+
+  setAbilityLv(abilityLv: number, key: string) {
+    store.setAbilityLvAction(abilityLv, key);
   }
 
   setLv(lv: number, key: string) {
@@ -66,6 +75,14 @@ export class Mixin extends Vue {
     store.setBaseDefenseCheckboxAction(baseDefense, key);
   }
 
+  setBaseMagic(baseMagic: number, key: string) {
+    store.setBaseMagicAction(baseMagic, key);
+  }
+
+  setBaseMagicCheckbox(baseMagic: boolean, key: string) {
+    store.setBaseMagicCheckboxAction(baseMagic, key);
+  }
+
   setDebuff(debuff: number, key: string) {
     store.setDebuffAction(debuff, key);
   }
@@ -76,6 +93,10 @@ export class Mixin extends Vue {
 
   setDefenseBuff(defenseBuff: number, key: string) {
     store.setDefenseBuffAction(defenseBuff, key);
+  }
+
+  setMagicBuff(magicBuff: number, key: string) {
+    store.setMagicBuffAction(magicBuff, key);
   }
 
   setIsWeekEnemy(isWeekEnemy: boolean, key: string) {
@@ -94,20 +115,8 @@ export class Mixin extends Vue {
     store.setIsNoArmorAction(isNoArmor, key);
   }
 
-  setIsCritical(isCritical: boolean, key: string) {
-    store.setIsCriticalAction(isCritical, key);
-  }
-
-  setIsBonusToFlyable(isBonusToFlyable: boolean, key: string) {
-    store.setIsBonusToFlyableAction(isBonusToFlyable, key);
-  }
-
   setWeaponAttack(weaponAttack: number, key: string) {
     store.setWeaponAttackAction(weaponAttack, key);
-  }
-
-  setWeaponElement(weaponElement: number, key: string) {
-    store.setWeaponElementAction(weaponElement, key);
   }
 
   setEquipmentAttack(equipmentAttack: number, key: string) {
@@ -134,22 +143,6 @@ export class Mixin extends Vue {
     store.setEquipmentGuardAction(equipmentGuard, key);
   }
 
-  setWeaponSkillLv(weaponSkillLv: number, key: string) {
-    store.setWeaponSkillLvAction(weaponSkillLv, key);
-  }
-
-  setCharge(charge: number, key: string) {
-    store.setChargeAction(charge, key);
-  }
-
-  setDirection(direction: number, key: string) {
-    store.setDirectionAction(direction, key);
-  }
-
-  setIsDying(isDying: boolean, key: string) {
-    store.setIsDyingAction(isDying, key);
-  }
-
   setIsWeekElement(isWeekElement: boolean, key: string) {
     store.setIsWeekElementAction(isWeekElement, key);
   }
@@ -158,22 +151,37 @@ export class Mixin extends Vue {
     store.setIsWeekResistAction(isWeekResist, key);
   }
 
-  setDamageResult(damageResult: number[][]) {
+  setEquipmentMagic(equipmentMagic: number, key: string) {
+    store.setEquipmentMagicAction(equipmentMagic, key);
+  }
+
+  setEquipmentMagicDefense(equipmentMagicDefense: number, key: string) {
+    store.setEquipmentMagicDefenseAction(equipmentMagicDefense, key);
+  }
+
+  setDamageResult(damageResult: number[]) {
     store.setDamageResultAction(damageResult);
   }
 
-  setUnitDataAll(
-    attack: NormalAttackStateUnitData,
-    defense: NormalAttackStateUnitData
-  ) {
-    store.setUnitDataAllAction(attack, defense);
-  }
+  updateLvAndCheckboxFromUnitName(key: string) {
+    const unitName = store.state.unitData[key].unitName;
+    const unitData = this.unitDataList.find(data => data.name === unitName);
 
-  setCheckboxAll(
-    attack: StateCheckboxInterface,
-    defense: StateCheckboxInterface
-  ) {
-    store.setCheckboxAllAction(attack, defense);
+    if (unitData?.bookLv) {
+      store.setLvAction(unitData.bookLv, key);
+      store.setAppearanceLvAction(unitData.bookLv, key);
+      store.setAppearanceLvCheckboxAction(false, key);
+      return;
+    }
+
+    const initUnitLv = initUnitLvList.find(data => data.unitName === unitName)
+      ?.lv;
+    if (!initUnitLv) {
+      return;
+    }
+    store.setLvAction(initUnitLv, key);
+    store.setAppearanceLvAction(initUnitLv, key);
+    store.setAppearanceLvCheckboxAction(true, key);
   }
 
   updateParam(key: string) {
@@ -205,27 +213,16 @@ export class Mixin extends Vue {
       );
       store.setBaseDefenseAction(calc.fixValue(baseDefense, 1, 2499), key);
     }
-  }
-
-  updateLvAndCheckboxFromUnitName(key: string) {
-    const unitName = store.state.unitData[key].unitName;
-    const unitData = this.unitDataList.find(data => data.name === unitName);
-
-    if (unitData?.bookLv) {
-      store.setLvAction(unitData.bookLv, key);
-      store.setAppearanceLvAction(unitData.bookLv, key);
-      store.setAppearanceLvCheckboxAction(false, key);
-      return;
+    if (store.state.checkbox[key].baseMagic === false) {
+      const baseMagic = calc.calcParameter(
+        classData.baseMagic,
+        store.state.unitData[key].appearanceLv,
+        classData?.hasAppearanceLvMagicBonus,
+        store.state.unitData[key].lv,
+        classData?.growMagic
+      );
+      store.setBaseMagicAction(calc.fixValue(baseMagic, 1, 2499), key);
     }
-
-    const initUnitLv = initUnitLvList.find(data => data.unitName === unitName)
-      ?.lv;
-    if (!initUnitLv) {
-      return;
-    }
-    store.setLvAction(initUnitLv, key);
-    store.setAppearanceLvAction(initUnitLv, key);
-    store.setAppearanceLvCheckboxAction(true, key);
   }
 
   updateDamageResult() {
@@ -237,47 +234,94 @@ export class Mixin extends Vue {
     );
     const defenseClassData = find.classData(defenseUnitData.className);
 
-    const baseAttack = calc.calcBasicAttack(
-      store.state,
-      attackUnitData!,
-      attackClassData!
+    const abilityData = find.abilityData(
+      store.state.unitData.attack.abilityName
     );
 
-    const attack = calc.calcAttack(baseAttack, store.state);
+    let power = 0;
+    let difference = 0;
+    // 最終攻撃値/能力差値
+    if (abilityData.type === "攻撃力") {
+      const baseAttack = calc.calcBasicAttack(
+        store.state,
+        attackUnitData!,
+        attackClassData!
+      );
+      const attack = calc.calcAttack(baseAttack, store.state);
+      power = Math.floor(attack / 5);
 
-    const baseDefense = calc.calcBasicDefense(
-      store.state,
-      defenseUnitData!,
-      defenseClassData!
+      const baseMagic = calc.calcBasicMagic(
+        store.state.unitData.attack,
+        attackUnitData!,
+        attackClassData!
+      );
+      const magic = calc.calcMagic(
+        baseMagic,
+        store.state.unitData.attack.equipmentMagic
+      );
+
+      const baseDefense = calc.calcBasicDefense(
+        store.state,
+        defenseUnitData!,
+        defenseClassData!
+      );
+      const isNoArmor =
+        store.state.unitData.defense.isNoArmor ||
+        !defenseUnitData?.isEquipableArmor;
+      const defense = calc.calcDefense(baseDefense, store.state, isNoArmor);
+
+      difference = magic - defense;
+    } else {
+      const attackerBaseMagic = calc.calcBasicMagic(
+        store.state.unitData.attack,
+        attackUnitData!,
+        attackClassData!
+      );
+      const attackerMagic = calc.calcMagic(
+        attackerBaseMagic,
+        store.state.unitData.attack.equipmentMagic
+      );
+      power = Math.floor(attackerMagic / 5);
+
+      const defenderBaseMagic = calc.calcBasicMagic(
+        store.state.unitData.defense,
+        defenseUnitData!,
+        defenseClassData!
+      );
+      const defenderMagic = calc.calcMagic(
+        defenderBaseMagic,
+        store.state.unitData.defense.equipmentMagic
+      );
+      difference = attackerMagic - defenderMagic;
+    }
+
+    //MP
+    let mp = 0;
+    if (store.state.unitData.attack.abilityLv === 1) {
+      mp = abilityData.mp1;
+    } else if (store.state.unitData.attack.abilityLv === 2) {
+      mp = abilityData.mp2;
+    } else {
+      mp = abilityData.mp3;
+    }
+
+    //魔防御
+    const baseMagicDefense = defenseUnitData.basicMagicDefense;
+    const equipmentMagicDefense = calc.fixValue(
+      store.state.unitData.defense.equipmentMagicDefense,
+      0,
+      5
     );
+    const magicDefense = baseMagicDefense + equipmentMagicDefense;
 
-    const isNoArmor =
-      store.state.unitData.defense.isNoArmor ||
-      !defenseUnitData?.isEquipableArmor;
-    const defense = calc.calcDefense(baseDefense, store.state, isNoArmor);
-
-    const isNoWeapon = store.state.unitData.attack.isNoWeapon;
-    let attackElement =
-      store.state.unitData.attack.weaponElement !== 0 && !isNoWeapon
-        ? formItems.weaponElement[store.state.unitData.attack.weaponElement]
-            .name
-        : attackUnitData?.element;
-    attackElement =
-      !isNoWeapon && store.state.unitData.attack.isBonusToFlyable
-        ? "飛行敵"
-        : attackElement;
-
+    // 属性弱点
     let isWeekElement = false;
-    if (
-      !isNoWeapon &&
-      store.state.unitData.attack.isBonusToFlyable &&
-      defenseUnitData?.isFlyable
-    ) {
-      isWeekElement = true;
-    } else if (store.state.unitData.defense.isWeekElement) {
+    if (store.state.unitData.defense.isWeekElement) {
       isWeekElement = true;
     }
 
+    // 属性耐性
+    const attackElement = abilityData.element;
     let isResistElement = false;
     if (
       attackElement !== "無" &&
@@ -287,25 +331,15 @@ export class Mixin extends Vue {
       isResistElement = true;
     }
 
-    let directionPow = 1;
-    switch (store.state.unitData.attack.direction) {
-      case 0:
-        directionPow = defenseUnitData?.frontDamegeScale!;
-        break;
-      case 1:
-        directionPow = defenseUnitData?.sideDamegeScale!;
-        break;
-      case 2:
-        directionPow = defenseUnitData?.backDamegeScale!;
-        break;
-    }
-
+    // スレイヤー武器
     const isSlayer =
-      !isNoWeapon &&
+      !store.state.unitData.attack.isNoWeapon &&
       find.slayerAndGuard(store.state.unitData.attack.equipmentSlayer) ===
         defenseUnitData?.slayer
         ? true
         : false;
+
+    // ガード防具
     const isGuard =
       !store.state.unitData.defense.isNoArmor &&
       find.slayerAndGuard(store.state.unitData.defense.equipmentGuard) ===
@@ -313,27 +347,17 @@ export class Mixin extends Vue {
         ? true
         : false;
 
-    const basicDamage = calc.calcBasicDamage(
-      attack,
-      store.state.unitData.attack.baseAttack
-    );
-    const addDamage = calc.calcAddDamage(
-      basicDamage,
-      attack,
-      store.state.unitData.attack.baseAttack,
-      defense,
-      store.state.unitData.defense.isDying,
-      isWeekElement
-    );
-    const damage = calc.calcConditionDamage(
-      addDamage,
-      isResistElement,
-      directionPow,
-      store.state.unitData.attack.charge,
+    const damage = calc.calcAbilityDamage(
+      power,
+      abilityData.power,
+      mp,
+      difference,
+      magicDefense,
       isSlayer,
-      isGuard
+      isGuard,
+      isWeekElement,
+      isResistElement
     );
-
     this.setDamageResult(damage);
   }
 

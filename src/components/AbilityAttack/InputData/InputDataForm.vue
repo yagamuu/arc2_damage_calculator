@@ -49,6 +49,26 @@
             />
           </v-col>
         </v-row>
+        <v-row dense v-if="target === 'attack'" style="margin-bottom:14px;">
+          <v-col cols="12" sm="4" lg="4">
+            <v-autocomplete
+              :items="abilityNameList"
+              v-model="abilityName"
+              label="特殊能力"
+              :messages="abilityNameMessage"
+              dense
+            ></v-autocomplete>
+          </v-col>
+          <v-col cols="12" sm="4" lg="4">
+            <v-select
+              :items="formItems.abilityLv"
+              v-model="abilityLv"
+              label="特殊能力Lv"
+              :messages="abilityLvMessage"
+              dense
+            ></v-select>
+          </v-col>
+        </v-row>
         <v-row dense>
           <v-col cols="6" sm="3" lg="3" v-if="target === 'attack'">
             <input-data-form-text-field
@@ -76,6 +96,19 @@
               tooltip="ユニットの基本防御力内部値を入力してください<br />※初期値はユニット、Lv、登場Lvから自動算出されます"
             />
           </v-col>
+          <v-col cols="6" sm="3" lg="3">
+            <input-data-form-text-field
+              hasCheckbox
+              checkboxTooltip="任意の基本魔力内部値を設定したい場合チェックしてください"
+              label="基本魔力内部値"
+              :value.sync="baseMagic"
+              :checkbox.sync="baseMagicCheckbox"
+              :min="1"
+              :max="2499"
+              :messages="baseMagicMessage"
+              tooltip="ユニットの基本魔力内部値を入力してください<br>※初期値はユニット、Lv、登場Lvから自動算出されます"
+            />
+          </v-col>
           <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
             <v-select
               item-text="name"
@@ -100,15 +133,25 @@
             <v-select
               item-text="name"
               item-value="effect"
-              :items="formItems.debuff"
-              v-model="debuff"
-              label="ヘモジーor石化"
+              :items="formItems.magicBuff"
+              v-model="magicBuff"
+              label="魔力上昇or低下"
               dense
             ></v-select>
           </v-col>
         </v-row>
         <v-row dense>
           <v-col cols="12" sm="3" lg="3">
+            <v-select
+              item-text="name"
+              item-value="effect"
+              :items="formItems.debuff"
+              v-model="debuff"
+              label="ヘモジーor石化"
+              dense
+            ></v-select>
+          </v-col>
+          <v-col cols="12" sm="4" lg="4">
             <v-switch
               label="ウィークエネミー"
               v-model="isWeekEnemy"
@@ -118,7 +161,7 @@
               class="mt-0"
             ></v-switch>
           </v-col>
-          <v-col cols="12" sm="3" lg="3">
+          <v-col cols="12" sm="4" lg="4">
             <v-switch
               label="毒"
               v-model="isPoison"
@@ -160,181 +203,136 @@
               hide-details
             ></v-switch>
           </v-col>
-          <v-col
-            cols="12"
-            sm="3"
-            lg="3"
-            v-if="target === 'attack' && !isNoWeapon"
-          >
-            <v-tooltip top>
-              <template v-slot:activator="{ on }">
-                <v-switch
-                  class="mt-0"
-                  label="クリティカル"
-                  v-model="isCritical"
-                  v-on="on"
-                  inset
-                  dense
-                  hide-details
-                ></v-switch>
-              </template>
-              <span
-                >装備特殊効果「クリティカルが出る」を持つアイテムを装備している場合チェックしてください</span
-              >
-            </v-tooltip>
-          </v-col>
-          <v-col
-            cols="12"
-            sm="3"
-            lg="3"
-            v-if="target === 'attack' && !isNoWeapon"
-          >
-            <v-tooltip top>
-              <template v-slot:activator="{ on }">
-                <v-switch
-                  class="mt-0"
-                  label="飛行敵ダメ増"
-                  v-model="isBonusToFlyable"
-                  v-on="on"
-                  inset
-                  dense
-                  hide-details
-                ></v-switch>
-              </template>
-              <span
-                >装備特殊効果「飛行敵にダメージ増」を持つアイテムの装備している場合チェックしてください</span
-              >
-            </v-tooltip>
-          </v-col>
         </v-row>
-        <v-row dense v-if="target === 'attack'">
-          <v-col cols="12" sm="3" lg="3" v-if="!isNoWeapon">
-            <input-data-form-text-field
-              label="武器ATT"
-              :value.sync="weaponAttack"
-              :min="0"
-              :max="499.8"
-              tooltip="装備武器のATTを入力してください"
-            />
-          </v-col>
-          <v-col cols="12" sm="3" lg="3" v-if="!isNoWeapon">
-            <v-select
-              item-text="name"
-              item-value="element"
-              v-model="weaponElement"
-              :items="formItems.weaponElement"
-              label="武器属性"
-              dense
-            ></v-select>
-          </v-col>
+        <v-row dense>
+          <template v-if="target === 'attack'">
+            <v-col cols="12" sm="3" lg="3" v-if="!isNoWeapon">
+              <input-data-form-text-field
+                label="武器ATT"
+                :value.sync="weaponAttack"
+                :min="0"
+                :max="499.8"
+                tooltip="装備武器のATTを入力してください"
+              />
+            </v-col>
+            <v-col cols="12" sm="3" lg="3">
+              <input-data-form-text-field
+                label="他装備ATT"
+                :value.sync="equipmentAttack"
+                :min="0"
+                :max="499.8"
+                tooltip="装備特殊効果「装備すると攻撃力上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
+              />
+            </v-col>
+            <v-col cols="12" sm="3" lg="3" v-if="!isNoWeapon">
+              <v-tooltip top>
+                <template v-slot:activator="{ on }">
+                  <v-select
+                    item-text="name"
+                    item-value="id"
+                    :items="formItems.slayerAndGuard"
+                    v-model="equipmentSlayer"
+                    label="スレイヤー装備"
+                    v-on="on"
+                    dense
+                  ></v-select>
+                </template>
+                <span
+                  >装備特殊効果「特定敵にダメージ増」を持つスレイヤーの装備の名称を選択してください</span
+                >
+              </v-tooltip>
+            </v-col>
+          </template>
+          <template v-if="target === 'defense'">
+            <v-col
+              cols="12"
+              sm="3"
+              lg="3"
+              v-if="!isNoArmor && isEquipableArmor"
+            >
+              <input-data-form-text-field
+                label="防具1DEF"
+                :value.sync="armorDefense1"
+                :min="0"
+                :max="499.8"
+                tooltip="装備防具のDEFを入力してください(中央)"
+              />
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3"
+              lg="3"
+              v-if="!isNoArmor && isEquipableArmor"
+            >
+              <input-data-form-text-field
+                label="防具2DEF"
+                :value.sync="armorDefense2"
+                :min="0"
+                :max="499.8"
+                tooltip="装備防具のDEFを入力してください(下段)"
+              />
+            </v-col>
+            <v-col cols="12" sm="3" lg="3">
+              <input-data-form-text-field
+                label="他装備DEF"
+                :value.sync="equipmentDefense"
+                :min="0"
+                :max="499.8"
+                tooltip="装備特殊効果「装備すると防御力上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
+              />
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3"
+              lg="3"
+              v-if="!isNoArmor && isEquipableArmor"
+            >
+              <v-tooltip top>
+                <template v-slot:activator="{ on }">
+                  <v-select
+                    item-text="name"
+                    item-value="id"
+                    :items="formItems.slayerAndGuard"
+                    v-model="equipmentGuard"
+                    label="ガード装備"
+                    v-on="on"
+                    dense
+                  ></v-select>
+                </template>
+                <span
+                  >装備特殊効果「特定敵からダメージ減」を持つガードの装備の名称を選択してください</span
+                >
+              </v-tooltip>
+            </v-col>
+          </template>
           <v-col cols="12" sm="3" lg="3">
             <input-data-form-text-field
-              label="他装備ATT"
-              :value.sync="equipmentAttack"
+              label="装備MAG"
+              :value.sync="equipmentMagic"
               :min="0"
               :max="499.8"
-              tooltip="装備特殊効果「装備すると攻撃力上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
+              tooltip="装備特殊効果「装備すると魔力上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
             />
           </v-col>
-          <v-col cols="12" sm="3" lg="3" v-if="!isNoWeapon">
-            <v-tooltip top>
-              <template v-slot:activator="{ on }">
-                <v-select
-                  item-text="name"
-                  item-value="id"
-                  :items="formItems.slayerAndGuard"
-                  v-model="equipmentSlayer"
-                  label="スレイヤー装備"
-                  v-on="on"
-                  dense
-                ></v-select>
-              </template>
-              <span
-                >装備特殊効果「特定敵にダメージ増」を持つスレイヤーの装備の名称を選択してください</span
-              >
-            </v-tooltip>
+          <v-col cols="12" sm="3" lg="3" v-if="target === 'defense'">
+            <input-data-form-text-field
+              label="装備魔防御"
+              :value.sync="equipmentMagicDefense"
+              :min="0"
+              :max="5"
+              tooltip="装備特殊効果「装備すると魔防御上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
+            />
           </v-col>
         </v-row>
+        <v-subheader
+          class="pl-0"
+          v-if="
+            target === 'defense' &&
+              isAbleManipWeekElement | isAbleManipWeekResist
+          "
+          >その他</v-subheader
+        >
         <v-row dense v-if="target === 'defense'">
-          <v-col cols="12" sm="3" lg="3" v-if="!isNoArmor && isEquipableArmor">
-            <input-data-form-text-field
-              label="防具1DEF"
-              :value.sync="armorDefense1"
-              :min="0"
-              :max="499.8"
-              tooltip="装備防具のDEFを入力してください(中央)"
-            />
-          </v-col>
-          <v-col cols="12" sm="3" lg="3" v-if="!isNoArmor && isEquipableArmor">
-            <input-data-form-text-field
-              label="防具2DEF"
-              :value.sync="armorDefense2"
-              :min="0"
-              :max="499.8"
-              tooltip="装備防具のDEFを入力してください(下段)"
-            />
-          </v-col>
-          <v-col cols="12" sm="3" lg="3">
-            <input-data-form-text-field
-              label="他装備DEF"
-              :value.sync="equipmentDefense"
-              :min="0"
-              :max="499.8"
-              tooltip="装備特殊効果「装備すると防御力上昇」を持つアイテムを装備している場合、<br />その上昇値を入力してください"
-            />
-          </v-col>
-          <v-col cols="12" sm="3" lg="3" v-if="!isNoArmor && isEquipableArmor">
-            <v-tooltip top>
-              <template v-slot:activator="{ on }">
-                <v-select
-                  item-text="name"
-                  item-value="id"
-                  :items="formItems.slayerAndGuard"
-                  v-model="equipmentGuard"
-                  label="ガード装備"
-                  v-on="on"
-                  dense
-                ></v-select>
-              </template>
-              <span
-                >装備特殊効果「特定敵からダメージ減」を持つガードの装備の名称を選択してください</span
-              >
-            </v-tooltip>
-          </v-col>
-        </v-row>
-        <v-subheader class="pl-0">その他</v-subheader>
-        <v-row dense v-if="target === 'attack'">
-          <v-col cols="12" sm="4" lg="4" v-if="!isNoWeapon">
-            <v-select
-              :items="formItems.skillLevel"
-              v-model="weaponSkillLv"
-              label="熟練Lv"
-              dense
-            ></v-select>
-          </v-col>
-          <v-col cols="12" sm="4" lg="4">
-            <v-select
-              :items="formItems.charge"
-              v-model="charge"
-              label="チャージ"
-              dense
-            ></v-select>
-          </v-col>
-          <v-col cols="12" sm="4" lg="4">
-            <v-select
-              item-text="name"
-              item-value="effect"
-              :items="formItems.direction"
-              v-model="direction"
-              label="攻撃方向"
-              dense
-            ></v-select>
-          </v-col>
-        </v-row>
-        <v-row dense v-if="target === 'defense'">
-          <v-col cols="12" sm="4" lg="4">
-            <v-switch label="瀕死" inset dense v-model="isDying"></v-switch>
-          </v-col>
           <v-col cols="12" sm="4" lg="4" v-if="isAbleManipWeekElement">
             <v-switch
               :label="attackElement + '属性弱点'"
@@ -394,6 +392,34 @@ export default class InputDataForm extends Mixins(Mixin) {
     return formItems;
   }
 
+  get abilityNameMessage() {
+    const abilityData = find.abilityData(
+      this.sharedState.unitData[this.target].abilityName
+    );
+
+    if (!abilityData?.power || !abilityData?.type) {
+      return "";
+    }
+
+    return `威力:${abilityData.power} タイプ:${abilityData.type}`;
+  }
+
+  get abilityLvMessage() {
+    const abilityData = find.abilityData(
+      this.sharedState.unitData[this.target].abilityName
+    );
+
+    if (this.sharedState.unitData.attack.abilityLv === 1) {
+      return `消費MP:${abilityData.mp1}`;
+    }
+
+    if (this.sharedState.unitData.attack.abilityLv === 2) {
+      return `消費MP:${abilityData.mp2}`;
+    }
+
+    return `消費MP:${abilityData.mp3}`;
+  }
+
   get baseAttackMessage() {
     const unitData = find.unitData(
       this.sharedState.unitData[this.target].unitName
@@ -418,6 +444,18 @@ export default class InputDataForm extends Mixins(Mixin) {
     return "修正値x" + unitData?.basicDefenseModifier;
   }
 
+  get baseMagicMessage() {
+    const unitData = find.unitData(
+      this.sharedState.unitData[this.target].unitName
+    );
+
+    if (!unitData?.basicMagicModifier) {
+      return "修正値x？";
+    }
+
+    return "修正値x" + unitData?.basicMagicModifier;
+  }
+
   get isEquipableArmor() {
     const unitData = find.unitData(
       this.sharedState.unitData[this.target].unitName
@@ -431,43 +469,21 @@ export default class InputDataForm extends Mixins(Mixin) {
   }
 
   get isAbleManipWeekElement() {
-    if (this.attackElement === "無") {
-      return false;
-    }
-    if (
-      this.sharedState.unitData.attack.isBonusToFlyable &&
-      !this.sharedState.unitData.attack.isNoWeapon
-    ) {
-      return false;
-    }
-    return true;
+    return this.attackElement !== null;
   }
 
   get isAbleManipWeekResist() {
     const unitData = find.unitData(this.sharedState.unitData.defense.unitName);
-
-    if (this.attackElement === "無") {
-      return false;
-    }
-    if (
-      this.sharedState.unitData.attack.isBonusToFlyable &&
-      !this.sharedState.unitData.attack.isNoWeapon
-    ) {
-      return false;
-    }
-    if (this.attackElement === unitData?.element) {
-      return false;
-    }
-    return true;
+    return (
+      this.attackElement !== null && this.attackElement !== unitData?.element
+    );
   }
 
   get attackElement() {
-    const unitData = find.unitData(this.sharedState.unitData.attack.unitName);
-    return this.sharedState.unitData.attack.weaponElement !== 0 &&
-      !this.sharedState.unitData.attack.isNoWeapon
-      ? formItems.weaponElement[this.sharedState.unitData.attack.weaponElement]
-          .name
-      : unitData?.element;
+    const abilityData = find.abilityData(
+      this.sharedState.unitData.attack.abilityName
+    );
+    return abilityData.element;
   }
 
   get unitName() {
@@ -476,6 +492,22 @@ export default class InputDataForm extends Mixins(Mixin) {
 
   set unitName(unitName: string) {
     this.setUnitName(unitName, this.target);
+  }
+
+  get abilityName() {
+    return this.sharedState.unitData[this.target].abilityName;
+  }
+
+  set abilityName(abilityName: string) {
+    this.setAbilityName(abilityName, this.target);
+  }
+
+  get abilityLv() {
+    return this.sharedState.unitData[this.target].abilityLv;
+  }
+
+  set abilityLv(abilityLv: number) {
+    this.setAbilityLv(abilityLv, this.target);
   }
 
   get lv() {
@@ -538,6 +570,23 @@ export default class InputDataForm extends Mixins(Mixin) {
     this.setBaseDefenseCheckbox(baseDefense, this.target);
   }
 
+  get baseMagic() {
+    return this.sharedState.unitData[this.target].baseMagic;
+  }
+
+  set baseMagic(baseMagic: number) {
+    baseMagic = calc.fixValue(baseMagic, 1, 2499);
+    this.setBaseMagic(baseMagic, this.target);
+  }
+
+  get baseMagicCheckbox() {
+    return this.sharedState.checkbox[this.target].baseMagic;
+  }
+
+  set baseMagicCheckbox(baseMagic: boolean) {
+    this.setBaseMagicCheckbox(baseMagic, this.target);
+  }
+
   get debuff() {
     return this.sharedState.unitData[this.target].debuff;
   }
@@ -560,6 +609,14 @@ export default class InputDataForm extends Mixins(Mixin) {
 
   set defenseBuff(defenseBuff: number) {
     this.setDefenseBuff(defenseBuff, this.target);
+  }
+
+  get magicBuff() {
+    return this.sharedState.unitData[this.target].magicBuff;
+  }
+
+  set magicBuff(magicBuff: number) {
+    this.setMagicBuff(magicBuff, this.target);
   }
 
   get isWeekEnemy() {
@@ -594,22 +651,6 @@ export default class InputDataForm extends Mixins(Mixin) {
     this.setIsNoArmor(isNoArmor, this.target);
   }
 
-  get isCritical() {
-    return this.sharedState.unitData[this.target].isCritical;
-  }
-
-  set isCritical(isCritical: boolean) {
-    this.setIsCritical(isCritical, this.target);
-  }
-
-  get isBonusToFlyable() {
-    return this.sharedState.unitData[this.target].isBonusToFlyable;
-  }
-
-  set isBonusToFlyable(isBonusToFlyable: boolean) {
-    this.setIsBonusToFlyable(isBonusToFlyable, this.target);
-  }
-
   get weaponAttack() {
     return this.sharedState.unitData[this.target].weaponAttack;
   }
@@ -617,14 +658,6 @@ export default class InputDataForm extends Mixins(Mixin) {
   set weaponAttack(weaponAttack: number) {
     weaponAttack = calc.fixValue(weaponAttack * 5, 0, 2499) / 5;
     this.setWeaponAttack(weaponAttack, this.target);
-  }
-
-  get weaponElement() {
-    return this.sharedState.unitData[this.target].weaponElement;
-  }
-
-  set weaponElement(weaponElement: number) {
-    this.setWeaponElement(weaponElement, this.target);
   }
 
   get equipmentAttack() {
@@ -679,38 +712,6 @@ export default class InputDataForm extends Mixins(Mixin) {
     this.setEquipmentGuard(equipmentGuard, this.target);
   }
 
-  get weaponSkillLv() {
-    return this.sharedState.unitData[this.target].weaponSkillLv;
-  }
-
-  set weaponSkillLv(weaponSkillLv: number) {
-    this.setWeaponSkillLv(weaponSkillLv, this.target);
-  }
-
-  get charge() {
-    return this.sharedState.unitData[this.target].charge;
-  }
-
-  set charge(charge: number) {
-    this.setCharge(charge, this.target);
-  }
-
-  get direction() {
-    return this.sharedState.unitData[this.target].direction;
-  }
-
-  set direction(direction: number) {
-    this.setDirection(direction, this.target);
-  }
-
-  get isDying() {
-    return this.sharedState.unitData[this.target].isDying;
-  }
-
-  set isDying(isDying: boolean) {
-    this.setIsDying(isDying, this.target);
-  }
-
   get isWeekElement() {
     return this.sharedState.unitData[this.target].isWeekElement;
   }
@@ -725,6 +726,24 @@ export default class InputDataForm extends Mixins(Mixin) {
 
   set isWeekResist(isWeekResist: boolean) {
     this.setIsWeekResist(isWeekResist, this.target);
+  }
+
+  get equipmentMagic() {
+    return this.sharedState.unitData[this.target].equipmentMagic;
+  }
+
+  set equipmentMagic(equipmentMagic: number) {
+    equipmentMagic = calc.fixValue(equipmentMagic * 5, 0, 2499) / 5;
+    this.setEquipmentMagic(equipmentMagic, this.target);
+  }
+
+  get equipmentMagicDefense() {
+    return this.sharedState.unitData[this.target].equipmentMagicDefense;
+  }
+
+  set equipmentMagicDefense(equipmentMagicDefense: number) {
+    equipmentMagicDefense = calc.fixValue(equipmentMagicDefense, 0, 5);
+    this.setEquipmentMagicDefense(equipmentMagicDefense, this.target);
   }
 }
 </script>

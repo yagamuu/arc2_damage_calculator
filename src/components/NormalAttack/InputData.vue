@@ -96,10 +96,10 @@ import InputDataForm from "./InputData/InputDataForm.vue";
 import { Mixin } from "./Mixin";
 import * as find from "@/util/find";
 import * as calc from "@/util/calc";
-import { StateInterface } from "@/types/State";
+import { NormalAttackStateInterface } from "@/types/NormalAttack/State";
 import clone from "clone";
 
-interface LocalStorageNormalAttack extends StateInterface {
+interface LocalStorageNormalAttack extends NormalAttackStateInterface {
   dataName: string;
 }
 
@@ -211,7 +211,9 @@ export default class InputData extends Mixins(Mixin) {
       : this.sharedState.unitData.attack.weaponSkillLv;
     return this.sharedState.damageResult.reduce((pre, current, index) => {
       if (
-        (this.sharedState.unitData.attack.isCritical && index === 7) ||
+        (this.sharedState.unitData.attack.isCritical &&
+          skillLv != 0 &&
+          index === 7) ||
         calc.skillPattern[skillLv][index] !== 0
       ) {
         pre.push(...current);
@@ -232,7 +234,9 @@ export default class InputData extends Mixins(Mixin) {
     const skillLv = this.sharedState.unitData.attack.isNoWeapon
       ? 0
       : this.sharedState.unitData.attack.weaponSkillLv;
-    const isCritical = this.sharedState.unitData.attack.isCritical;
+    const isCritical =
+      this.sharedState.unitData.attack.isCritical &&
+      !this.sharedState.unitData.attack.isNoWeapon;
     let result = 0;
     this.sharedState.damageResult.forEach((value, index) => {
       result +=

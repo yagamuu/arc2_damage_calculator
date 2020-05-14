@@ -43,7 +43,24 @@ export const defenseBuff = [
   }
 ];
 
+export const magicBuff = [
+  {
+    name: "無",
+    effect: 0
+  },
+  {
+    name: "魔力上昇",
+    effect: 1
+  },
+  {
+    name: "魔力低下",
+    effect: 2
+  }
+];
+
 export const skillLevel = [...Array(15).keys()].map(i => ++i);
+
+export const abilityLv = [...Array(3).keys()].map(i => ++i);
 
 export const charge = [...Array(16).keys()];
 

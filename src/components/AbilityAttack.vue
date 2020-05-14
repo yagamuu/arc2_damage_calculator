@@ -1,18 +1,29 @@
 <template>
   <v-container>
-    <v-card>
-      <v-subheader>特殊能力</v-subheader>
-    </v-card>
+    <v-expansion-panels multiple focusable hover :value="open">
+      <v-expansion-panel v-for="(panel, i) in panels" :key="i">
+        <v-expansion-panel-header>{{ panel.header }}</v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <component :is="panel.component" />
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+    </v-expansion-panels>
   </v-container>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import InputData from "./AbilityAttack/InputData.vue";
+import Description from "./AbilityAttack/Description.vue";
 
 @Component({
-  components: {}
+  components: { InputData, Description }
 })
 export default class AbilityAttack extends Vue {
-  dialog = false;
+  open = [0];
+  panels = [
+    { header: "データ入力", component: InputData },
+    { header: "データ詳細", component: Description }
+  ];
 }
 </script>

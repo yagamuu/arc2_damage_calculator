@@ -53,16 +53,22 @@ export default class Description extends Vue {
       : this.sharedState.unitData.attack.weaponSkillLv;
   }
 
+  get isCritical() {
+    return (
+      this.sharedState.unitData.attack.isCritical &&
+      !this.sharedState.unitData.attack.isNoWeapon
+    );
+  }
+
   isVisibleDamage(index: number) {
-    if (this.sharedState.unitData.attack.isCritical && index === 7) {
+    if (this.isCritical && index === 7) {
       return true;
     }
     return this.skillPattern[this.skillLv][index] > 0 ? true : false;
   }
 
   skillPatternProbability(index: number) {
-    const isCritical = this.sharedState.unitData.attack.isCritical;
-    return calc.skillPatternProbability(this.skillLv, index, isCritical);
+    return calc.skillPatternProbability(this.skillLv, index, this.isCritical);
   }
 }
 </script>

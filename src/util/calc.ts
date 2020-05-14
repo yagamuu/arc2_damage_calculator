@@ -1,4 +1,5 @@
 import { ClassData, UnitData, StateInterface } from "@/types";
+import { AbilityAttackStateUnitData } from "@/types/AbilityAttack/State";
 
 // チャージ補正
 export const chargePow = [
@@ -72,6 +73,15 @@ export const initDamageResult = (): number[][] => {
 };
 
 /**
+ * 初期化ダメージ配列(特殊能力)を取得
+ * @return {number[]} ダメージ配列
+ */
+export const initAbilityDamageResult = (): number[] => {
+  const result = new Array<number>(48).fill(0);
+  return result;
+};
+
+/**
  * 現在の基礎パラメーターを計算
  * @param {number} baseValue クラス別の初期パラメーター
  * @param {number} appearanceLv 登場Lv
@@ -122,8 +132,8 @@ export const calcParameterWithWeekEnemy = (
  * @param {ClassData} classData クラスの固有データ
  * @return {number} 計算結果
  */
-export const calcBasicAttack = (
-  state: StateInterface,
+export const calcBasicAttack = <T extends StateInterface>(
+  state: T,
   unitData: UnitData,
   classData: ClassData
 ): number => {
@@ -172,9 +182,9 @@ export const calcBasicAttack = (
  * @param {StateInterface} state storeのstate
  * @return {number} 計算結果
  */
-export const calcAttack = (
+export const calcAttack = <T extends StateInterface>(
   basicAttack: number,
-  state: StateInterface
+  state: T
 ): number => {
   let attack = basicAttack;
   const weaponAttack =
@@ -201,8 +211,8 @@ export const calcAttack = (
  * @param {ClassData} classData クラスの固有データ
  * @return {number} 計算結果
  */
-export const calcBasicDefense = (
-  state: StateInterface,
+export const calcBasicDefense = <T extends StateInterface>(
+  state: T,
   unitData: UnitData,
   classData: ClassData
 ): number => {
@@ -251,17 +261,21 @@ export const calcBasicDefense = (
  * 防御力を計算
  * @param {number} basicDefense: 基本防御力
  * @param {StateInterface} state storeのstate
+ * @param {boolean} isNoArmor 防具の有無
  * @return {number} 計算結果
  */
-export const calcDefense = (
+export const calcDefense = <T extends StateInterface>(
   basicDefense: number,
-  state: StateInterface
+  state: T,
+  isNoArmor: boolean
 ): number => {
   let defense = basicDefense;
-  const armorDefense1 =
-    fixValue(state.unitData.defense.armorDefense1 * 5, 0, 2499) / 5;
-  const armorDefense2 =
-    fixValue(state.unitData.defense.armorDefense2 * 5, 0, 2499) / 5;
+  const armorDefense1 = isNoArmor
+    ? 0
+    : fixValue(state.unitData.defense.armorDefense1 * 5, 0, 2499) / 5;
+  const armorDefense2 = isNoArmor
+    ? 0
+    : fixValue(state.unitData.defense.armorDefense2 * 5, 0, 2499) / 5;
   const equipmentDefense =
     fixValue(state.unitData.defense.equipmentDefense * 5, 0, 2499) / 5;
   defense = fixValue(
@@ -271,6 +285,65 @@ export const calcDefense = (
   );
 
   return defense;
+};
+
+/**
+ * 基本魔力を計算
+ * @param {AbilityAttackStateUnitData} stateUnitData storeのUnitData
+ * @param {UnitData} unitData ユニットの固有データ
+ * @param {ClassData} classData クラスの固有データ
+ * @return {number} 計算結果
+ */
+export const calcBasicMagic = (
+  stateUnitData: AbilityAttackStateUnitData,
+  unitData: UnitData,
+  classData: ClassData
+): number => {
+  let basicMagic = fixValue(
+    stateUnitData.baseMagic * unitData.basicMagicModifier!,
+    1,
+    2499
+  );
+  // ウィークエネミー
+  if (stateUnitData.isWeekEnemy) {
+    basicMagic = fixValue(
+      calcParameterWithWeekEnemy(
+        classData?.baseMagic!,
+        stateUnitData.appearanceLv,
+        classData?.hasAppearanceLvMagicBonus!,
+        stateUnitData.lv,
+        classData?.growMagic!
+      ),
+      1,
+      2499
+    );
+  } else {
+    // 魔力バフ
+    if (stateUnitData.magicBuff === 1) {
+      basicMagic = fixValue(basicMagic * 1.25, 1, 2499);
+    } else if (stateUnitData.magicBuff === 2) {
+      basicMagic = fixValue(basicMagic * 0.75, 1, 2499);
+    }
+  }
+
+  return basicMagic;
+};
+
+/**
+ * 魔力を計算
+ * @param {number} basicMagic: 基本魔力
+ * @param {number} equipmentMagic: 装備MAG
+ * @return {number} 計算結果
+ */
+export const calcMagic = (
+  basicMagic: number,
+  equipmentMagic: number
+): number => {
+  let magic = basicMagic;
+  equipmentMagic = fixValue(equipmentMagic * 5, 0, 2499) / 5;
+  magic = fixValue((magic / 5 + equipmentMagic) * 5, 1, 2499);
+
+  return magic;
 };
 
 /**
@@ -402,4 +475,56 @@ export const skillPatternProbability = (
     return (84 / 100) * (skillPattern[skillLv][index] / 100) * 100;
   }
   return skillPattern[skillLv][index];
+};
+
+/**
+ * 特殊能力ダメージを計算
+ * @param {number} power 最終攻撃値
+ * @param {number} abilityPower 特殊能力威力
+ * @return {number[]} 計算結果
+ */
+export const calcAbilityDamage = (
+  power: number,
+  abilityPower: number,
+  mp: number,
+  difference: number,
+  magicDefense: number,
+  isSlayer: boolean,
+  isGuard: boolean,
+  isWeekElement: boolean,
+  isResistElement: boolean
+): number[] => {
+  const damageResult = initAbilityDamageResult();
+  const slayerPow = isSlayer ? 1.5 : 1;
+  const guardPow = isGuard ? 0.5 : 0;
+  const weekElementPow = isWeekElement ? 1.25 : 1;
+  const resistElementPow = isResistElement ? 0.8 : 1;
+
+  if (difference > 100) {
+    difference = 0.5;
+  } else if (difference < -100) {
+    difference = -0.5;
+  } else {
+    difference = Math.floor(difference / 2) / 100;
+  }
+
+  for (let i = 0; i < 48; i++) {
+    let damage = power;
+    damage = Math.floor((damage * Math.round(abilityPower * 100)) / 100);
+    damage = Math.floor((damage * (216 + i)) / 100);
+    damage = Math.floor((damage * (100 + mp)) / 100);
+    const differenceDamage =
+      difference >= 0
+        ? Math.floor((damage * (difference * 100)) / 100)
+        : Math.ceil((damage * (difference * 100)) / 100);
+    damage = damage + differenceDamage;
+    damage = Math.floor(damage * slayerPow);
+    damage = damage - Math.floor(damage * guardPow);
+    damage = Math.floor(damage * weekElementPow);
+    damage = Math.floor((damage * Math.round(resistElementPow * 10)) / 10);
+    damage = damage - Math.floor((damage * magicDefense) / 16);
+
+    damageResult[i] = damage + 1;
+  }
+  return damageResult;
 };
