@@ -32,9 +32,8 @@
                 max="32767"
                 style="max-width:350px;"
                 label="入力値以上のダメージが発生する確率"
-                value="0"
-                disabled
-                messages="未実装"
+                v-model="damage"
+                :messages="damageProbabilityMessage"
                 dense
               ></v-text-field
             ></v-card-text>
@@ -106,6 +105,7 @@ export default class InputData extends Mixins(Mixin) {
   dataName = "";
   snackbarText = "";
   snackbar = false;
+  damage = 0;
 
   mounted() {
     if (localStorage.getItem("abilityAttack")) {
@@ -203,7 +203,19 @@ export default class InputData extends Mixins(Mixin) {
 
   get expected() {
     return Math.floor(
-      this.sharedState.damageResult.reduce((a, b) => a + b) / 48
+      this.sharedState.damageResult.reduce((a, b) => a + b) /
+        this.sharedState.damageResult.length
+    );
+  }
+
+  get damageProbabilityMessage() {
+    let count = 0;
+    this.sharedState.damageResult.forEach(value => {
+      count += this.damage <= value ? 1 : 0;
+    });
+
+    return (
+      ((count / this.sharedState.damageResult.length) * 100).toFixed(2) + "％"
     );
   }
 }
