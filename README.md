@@ -25,5 +25,5 @@ npm run lint
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
-### Credits
+## Credits
 各種データ元: [アークザラッド２データベース(ありのす様)](http://arinosu.ari-jigoku.com/arc2/)
