@@ -1,4 +1,4 @@
-# arc2_damage_calculator_for_speedrunner
+# arc2_damage_calculator
 アークザラッド2のダメージを算出する計算機です。  
 アークザラッド２データベースのダメージ計算機を元に、自動パラメーター計算や各種入力補助、データ保存などの機能を追加しています。
 
