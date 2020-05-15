@@ -34,7 +34,7 @@ const initUnitData = (): NormalAttackStateUnitData => {
     direction: 0,
     isDying: false,
     isWeekElement: false,
-    isWeekResist: false
+    isResistElement: false
   };
 };
 
@@ -157,8 +157,8 @@ export default {
   setIsWeekElementAction(isWeekElement: boolean, key: string) {
     this.state.unitData[key].isWeekElement = isWeekElement;
   },
-  setIsWeekResistAction(isWeekResist: boolean, key: string) {
-    this.state.unitData[key].isWeekResist = isWeekResist;
+  setIsResistElementAction(isResistElement: boolean, key: string) {
+    this.state.unitData[key].isResistElement = isResistElement;
   },
   setCheckboxAllAction(
     attack: StateCheckboxInterface,

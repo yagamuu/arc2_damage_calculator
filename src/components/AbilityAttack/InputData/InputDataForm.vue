@@ -328,7 +328,7 @@
           class="pl-0"
           v-if="
             target === 'defense' &&
-              isAbleManipWeekElement | isAbleManipWeekResist
+              isAbleManipWeekElement | isAbleManipResistElement
           "
           >その他</v-subheader
         >
@@ -341,12 +341,12 @@
               v-model="isWeekElement"
             ></v-switch>
           </v-col>
-          <v-col cols="12" sm="4" lg="4" v-if="isAbleManipWeekResist">
+          <v-col cols="12" sm="4" lg="4" v-if="isAbleManipResistElement">
             <v-switch
               :label="attackElement + '属性耐性'"
               inset
               dense
-              v-model="isWeekResist"
+              v-model="isResistElement"
             ></v-switch>
           </v-col>
         </v-row>
@@ -472,7 +472,7 @@ export default class InputDataForm extends Mixins(Mixin) {
     return this.attackElement !== null;
   }
 
-  get isAbleManipWeekResist() {
+  get isAbleManipResistElement() {
     const unitData = find.unitData(this.sharedState.unitData.defense.unitName);
     return (
       this.attackElement !== null && this.attackElement !== unitData?.element
@@ -720,12 +720,12 @@ export default class InputDataForm extends Mixins(Mixin) {
     this.setIsWeekElement(isWeekElement, this.target);
   }
 
-  get isWeekResist() {
-    return this.sharedState.unitData[this.target].isWeekResist;
+  get isResistElement() {
+    return this.sharedState.unitData[this.target].isResistElement;
   }
 
-  set isWeekResist(isWeekResist: boolean) {
-    this.setIsWeekResist(isWeekResist, this.target);
+  set isResistElement(isResistElement: boolean) {
+    this.setIsResistElement(isResistElement, this.target);
   }
 
   get equipmentMagic() {

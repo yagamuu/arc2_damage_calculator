@@ -151,8 +151,8 @@ export class Mixin extends Vue {
     store.setIsWeekElementAction(isWeekElement, key);
   }
 
-  setIsWeekResist(isWeekResist: boolean, key: string) {
-    store.setIsWeekResistAction(isWeekResist, key);
+  setIsResistElement(isResistElement: boolean, key: string) {
+    store.setIsResistElementAction(isResistElement, key);
   }
 
   setEquipmentMagic(equipmentMagic: number, key: string) {
@@ -344,7 +344,7 @@ export class Mixin extends Vue {
     if (
       attackElement !== "無" &&
       (attackElement === defenseUnitData?.element ||
-        store.state.unitData.defense.isWeekResist)
+        store.state.unitData.defense.isResistElement)
     ) {
       isResistElement = true;
     }

@@ -19,7 +19,7 @@ export interface StateUnitData {
   equipmentDefense: number;
   equipmentGuard: number;
   isWeekElement: boolean;
-  isWeekResist: boolean;
+  isResistElement: boolean;
 }
 
 export interface StateCheckboxInterface {

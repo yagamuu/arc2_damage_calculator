@@ -27,7 +27,7 @@ const initUnitData = (): AbilityAttackStateUnitData => {
     equipmentDefense: 0,
     equipmentGuard: 0,
     isWeekElement: false,
-    isWeekResist: false,
+    isResistElement: false,
     abilityName: "アースクエイク",
     abilityLv: 1,
     baseMagic: 107,
@@ -137,8 +137,8 @@ export default {
   setIsWeekElementAction(isWeekElement: boolean, key: string) {
     this.state.unitData[key].isWeekElement = isWeekElement;
   },
-  setIsWeekResistAction(isWeekResist: boolean, key: string) {
-    this.state.unitData[key].isWeekResist = isWeekResist;
+  setIsResistElementAction(isResistElement: boolean, key: string) {
+    this.state.unitData[key].isResistElement = isResistElement;
   },
   setCheckboxAllAction(
     attack: AbilityAttackStateCheckboxInterface,
