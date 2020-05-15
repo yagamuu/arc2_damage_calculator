@@ -106,7 +106,6 @@ export const calcParameter = (
 /**
  * 現在の基礎パラメーターを計算(ウィークエネミー時)
  * @param {number} baseValue クラス別の初期パラメーター
- * @param {number} appearanceLv 登場Lv
  * @param {boolean} hasAppearanceLvBonus 登場Lvボーナスの有無
  * @param {number} lv 現在Lv
  * @param {number} growValue 成長値
@@ -114,13 +113,12 @@ export const calcParameter = (
  */
 export const calcParameterWithWeekEnemy = (
   baseValue: number,
-  appearanceLv: number,
   hasAppearanceLvBonus: boolean,
   lv: number,
   growValue: number
 ): number => {
   baseValue = hasAppearanceLvBonus
-    ? baseValue + Math.floor((appearanceLv - 1) / 16)
+    ? baseValue + Math.floor((lv - 1) / 16)
     : baseValue;
   return baseValue + Math.floor((lv - 1) / 4) * growValue;
 };
@@ -147,7 +145,6 @@ export const calcBasicAttack = <T extends StateInterface>(
     basicAttack = fixValue(
       calcParameterWithWeekEnemy(
         classData?.baseAttack!,
-        state.unitData.attack.appearanceLv,
         classData?.hasAppearanceLvAttackBonus!,
         state.unitData.attack.lv,
         classData?.growAttack!
@@ -226,7 +223,6 @@ export const calcBasicDefense = <T extends StateInterface>(
     basicDefense = fixValue(
       calcParameterWithWeekEnemy(
         classData?.baseDefense!,
-        state.unitData.defense.appearanceLv,
         classData?.hasAppearanceLvDefenseBonus!,
         state.unitData.defense.lv,
         classData?.growDefense!
@@ -309,7 +305,6 @@ export const calcBasicMagic = (
     basicMagic = fixValue(
       calcParameterWithWeekEnemy(
         classData?.baseMagic!,
-        stateUnitData.appearanceLv,
         classData?.hasAppearanceLvMagicBonus!,
         stateUnitData.lv,
         classData?.growMagic!
@@ -481,6 +476,12 @@ export const skillPatternProbability = (
  * 特殊能力ダメージを計算
  * @param {number} power 最終攻撃値
  * @param {number} abilityPower 特殊能力威力
+ * @param {number} mp 消費MP
+ * @param {number} difference 能力差補正
+ * @param {boolean} isSlayer スレイヤー装備補正
+ * @param {boolean} isGuard ガード装備補正
+ * @param {boolean} isWeekElement 属性弱点
+ * @param {boolean} isResistElement 属性耐性
  * @return {number[]} 計算結果
  */
 export const calcAbilityDamage = (
