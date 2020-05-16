@@ -33,7 +33,7 @@
                 }}<br />
                 ダメージ(ヒット)期待値：{{ expected }}<br />
                 ヒット率：{{ hit.toFixed(2) }}％<br />
-                防御率：{{ guard }}％<br />
+                防御率：{{ guardActual }}％({{ guard }}％)<br />
                 回避率：{{ dodge }}％
               </p>
               <v-text-field
@@ -42,9 +42,8 @@
                 max="32767"
                 style="max-width:350px;"
                 label="入力値以上のダメージが発生する確率"
-                value="0"
-                disabled
-                messages="未実装"
+                v-model="damage"
+                :messages="damageProbabilityMessage"
                 dense
               ></v-text-field
             ></v-card-text>
@@ -118,6 +117,7 @@ export default class InputData extends Mixins(Mixin) {
   dataName = "";
   snackbarText = "";
   snackbar = false;
+  damage = 0;
 
   mounted() {
     if (localStorage.getItem("normalAttack")) {
@@ -252,6 +252,9 @@ export default class InputData extends Mixins(Mixin) {
       this.sharedState.unitData.defense.unitName
     );
     const basicGuard = defenseUnitData.basicGuard;
+    if (basicGuard === 0) {
+      return 0;
+    }
     const guard =
       Math.floor((basicGuard * 100) / 16) +
       Math.trunc(
@@ -265,6 +268,10 @@ export default class InputData extends Mixins(Mixin) {
     return guard;
   }
 
+  get guardActual() {
+    return 100 * ((100 - this.dodge) / 100) * (this.guard / 100);
+  }
+
   get dodge() {
     if (this.sharedState.unitData.attack.charge > 0) {
       return 0;
@@ -274,6 +281,9 @@ export default class InputData extends Mixins(Mixin) {
       this.sharedState.unitData.defense.unitName
     );
     const basicDodge = defenseUnitData.basicDodge;
+    if (basicDodge === 0) {
+      return 0;
+    }
     const dodge =
       Math.floor((basicDodge * 100) / 16) +
       Math.trunc(
@@ -288,6 +298,33 @@ export default class InputData extends Mixins(Mixin) {
 
   get hit() {
     return 100 * ((100 - this.dodge) / 100) * ((100 - this.guard) / 100);
+  }
+
+  get damageProbabilityMessage() {
+    const skillLv = this.sharedState.unitData.attack.isNoWeapon
+      ? 0
+      : this.sharedState.unitData.attack.weaponSkillLv;
+    const isCritical =
+      this.sharedState.unitData.attack.isCritical &&
+      !this.sharedState.unitData.attack.isNoWeapon;
+    const hit = this.hit / 100;
+    const guard = this.guardActual / 100;
+
+    let result = 0;
+    this.sharedState.damageResult.forEach((damageArray, index) => {
+      const skillPatternProbability =
+        calc.skillPatternProbability(skillLv, index, isCritical) / 100;
+      damageArray.forEach(damage => {
+        result +=
+          this.damage <= damage ? (skillPatternProbability / 6) * hit : 0;
+        result +=
+          this.damage <= Math.ceil(damage * 0.1)
+            ? (skillPatternProbability / 6) * guard
+            : 0;
+      });
+    });
+
+    return (result * 100).toFixed(2) + "％";
   }
 }
 </script>
