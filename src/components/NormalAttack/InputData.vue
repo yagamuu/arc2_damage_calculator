@@ -33,7 +33,7 @@
                 }}<br />
                 ダメージ(ヒット)期待値：{{ expected }}<br />
                 ヒット率：{{ hit.toFixed(2) }}％<br />
-                防御率：{{ guardActual }}％({{ guard }}％)<br />
+                防御率：{{ guardActual.toFixed(2) }}％({{ guard }}％)<br />
                 回避率：{{ dodge }}％
               </p>
               <v-text-field
