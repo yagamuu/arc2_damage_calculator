@@ -28,7 +28,7 @@ const initUnitData = (): AbilityAttackStateUnitData => {
     equipmentGuard: 0,
     isWeekElement: false,
     isResistElement: false,
-    abilityName: "アースクエイク",
+    abilityName: "バーングラウンド",
     abilityLv: 1,
     baseMagic: 107,
     magicBuff: 0,

@@ -24,6 +24,37 @@ export class Mixin extends Vue {
   abilityDataList = abilityDataList;
   abilityNameList = [...abilityDataList].map(value => value.name);
 
+  get abilityList(): Array<string> {
+    if (this.sharedState.unitData.attack.unitName === "ヂークベック") {
+      return this.abilityNameList;
+    }
+    const unitData = find.unitData(this.sharedState.unitData.attack.unitName);
+    const classData = find.classData(unitData.className);
+
+    const list = [
+      unitData.abilityName1,
+      unitData.abilityName2,
+      unitData.abilityName3,
+      unitData.abilityName4,
+      unitData.abilityName5,
+      unitData.abilityName6,
+      unitData.abilityName7,
+      unitData.abilityName8,
+      classData.addAbilityName1,
+      classData.addAbilityName2,
+      classData.addAbilityName3,
+      classData.addAbilityName4,
+      classData.addAbilityName5,
+      classData.addAbilityName6
+    ];
+
+    const abilityList = list.filter(
+      (v): v is string => v !== null && this.abilityNameList.includes(v)
+    );
+
+    return abilityList.length > 0 ? abilityList : this.abilityNameList;
+  }
+
   initUnitData() {
     store.initUnitDataAction();
   }
@@ -36,6 +67,10 @@ export class Mixin extends Vue {
     store.setUnitNameAction(unitName, key);
     this.updateLvAndCheckboxFromUnitName(key);
     this.updateParam(key);
+
+    if (key === "attack") {
+      this.setAbilityName(this.abilityList[0], "attack");
+    }
   }
 
   setAbilityName(abilityName: string, key: string) {

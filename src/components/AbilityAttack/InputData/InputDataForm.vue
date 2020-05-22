@@ -52,7 +52,7 @@
         <v-row dense v-if="target === 'attack'" style="margin-bottom:14px;">
           <v-col cols="12" sm="4" lg="4">
             <v-autocomplete
-              :items="abilityNameList"
+              :items="abilityList"
               v-model="abilityName"
               label="特殊能力"
               :messages="abilityNameMessage"
