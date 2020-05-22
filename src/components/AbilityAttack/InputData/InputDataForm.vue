@@ -171,7 +171,12 @@
           </v-col>
         </v-row>
         <v-row dense>
-          <v-col cols="12" sm="3" lg="3">
+          <v-col
+            cols="12"
+            sm="3"
+            lg="3"
+            v-if="target === 'defense' && isStrengthAbility"
+          >
             <v-select
               item-text="name"
               item-value="effect"
@@ -191,7 +196,7 @@
               class="mt-0"
             ></v-switch>
           </v-col>
-          <v-col cols="12" sm="4" lg="4">
+          <v-col cols="12" sm="4" lg="4" v-if="isStrengthAbility">
             <v-switch
               label="毒"
               v-model="isPoison"
