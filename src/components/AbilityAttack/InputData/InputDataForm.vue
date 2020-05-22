@@ -70,7 +70,12 @@
           </v-col>
         </v-row>
         <v-row dense>
-          <v-col cols="6" sm="3" lg="3" v-if="target === 'attack'">
+          <v-col
+            cols="6"
+            sm="3"
+            lg="3"
+            v-if="target === 'attack' && isStrengthAbility"
+          >
             <input-data-form-text-field
               hasCheckbox
               checkboxTooltip="任意の基本攻撃力内部値を設定したい場合チェックしてください"
@@ -83,7 +88,12 @@
               tooltip="ユニットの基本攻撃力内部値を入力してください<br>※初期値はユニット、Lv、登場Lvから自動算出されます"
             />
           </v-col>
-          <v-col cols="6" sm="3" lg="3" v-if="target === 'defense'">
+          <v-col
+            cols="6"
+            sm="3"
+            lg="3"
+            v-if="target === 'defense' && isStrengthAbility"
+          >
             <input-data-form-text-field
               hasCheckbox
               checkboxTooltip="任意の基本防御力内部値を設定したい場合チェックしてください"
@@ -96,7 +106,12 @@
               tooltip="ユニットの基本防御力内部値を入力してください<br />※初期値はユニット、Lv、登場Lvから自動算出されます"
             />
           </v-col>
-          <v-col cols="6" sm="3" lg="3">
+          <v-col
+            cols="6"
+            sm="3"
+            lg="3"
+            v-if="target !== 'defense' || isMagicAbility"
+          >
             <input-data-form-text-field
               hasCheckbox
               checkboxTooltip="任意の基本魔力内部値を設定したい場合チェックしてください"
@@ -109,7 +124,12 @@
               tooltip="ユニットの基本魔力内部値を入力してください<br>※初期値はユニット、Lv、登場Lvから自動算出されます"
             />
           </v-col>
-          <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
+          <v-col
+            cols="12"
+            sm="3"
+            lg="3"
+            v-if="target === 'attack' && isStrengthAbility"
+          >
             <v-select
               item-text="name"
               item-value="effect"
@@ -119,7 +139,12 @@
               dense
             ></v-select>
           </v-col>
-          <v-col cols="12" sm="3" lg="3" v-if="target === 'defense'">
+          <v-col
+            cols="12"
+            sm="3"
+            lg="3"
+            v-if="target === 'defense' && isStrengthAbility"
+          >
             <v-select
               item-text="name"
               item-value="effect"
@@ -129,7 +154,12 @@
               dense
             ></v-select>
           </v-col>
-          <v-col cols="12" sm="3" lg="3">
+          <v-col
+            cols="12"
+            sm="3"
+            lg="3"
+            v-if="target !== 'defense' || isMagicAbility"
+          >
             <v-select
               item-text="name"
               item-value="effect"
@@ -206,7 +236,12 @@
         </v-row>
         <v-row dense>
           <template v-if="target === 'attack'">
-            <v-col cols="12" sm="3" lg="3" v-if="!isNoWeapon">
+            <v-col
+              cols="12"
+              sm="3"
+              lg="3"
+              v-if="!isNoWeapon && isStrengthAbility"
+            >
               <input-data-form-text-field
                 label="武器ATT"
                 :value.sync="weaponAttack"
@@ -215,7 +250,7 @@
                 tooltip="装備武器のATTを入力してください"
               />
             </v-col>
-            <v-col cols="12" sm="3" lg="3">
+            <v-col cols="12" sm="3" lg="3" v-if="isStrengthAbility">
               <input-data-form-text-field
                 label="他装備ATT"
                 :value.sync="equipmentAttack"
@@ -248,7 +283,7 @@
               cols="12"
               sm="3"
               lg="3"
-              v-if="!isNoArmor && isEquipableArmor"
+              v-if="!isNoArmor && isEquipableArmor && isStrengthAbility"
             >
               <input-data-form-text-field
                 label="防具1DEF"
@@ -262,7 +297,7 @@
               cols="12"
               sm="3"
               lg="3"
-              v-if="!isNoArmor && isEquipableArmor"
+              v-if="!isNoArmor && isEquipableArmor && isStrengthAbility"
             >
               <input-data-form-text-field
                 label="防具2DEF"
@@ -272,7 +307,7 @@
                 tooltip="装備防具のDEFを入力してください(下段)"
               />
             </v-col>
-            <v-col cols="12" sm="3" lg="3">
+            <v-col cols="12" sm="3" lg="3" v-if="isStrengthAbility">
               <input-data-form-text-field
                 label="他装備DEF"
                 :value.sync="equipmentDefense"
@@ -305,7 +340,7 @@
               </v-tooltip>
             </v-col>
           </template>
-          <v-col cols="12" sm="3" lg="3">
+          <v-col cols="12" sm="3" lg="3" v-if="isMagicAbility">
             <input-data-form-text-field
               label="装備MAG"
               :value.sync="equipmentMagic"
@@ -454,6 +489,22 @@ export default class InputDataForm extends Mixins(Mixin) {
     }
 
     return "修正値x" + unitData?.basicMagicModifier;
+  }
+
+  get isStrengthAbility() {
+    const abilityData = find.abilityData(
+      this.sharedState.unitData.attack.abilityName
+    );
+
+    return abilityData?.type === "攻撃力";
+  }
+
+  get isMagicAbility() {
+    const abilityData = find.abilityData(
+      this.sharedState.unitData.attack.abilityName
+    );
+
+    return abilityData?.type === "魔力";
   }
 
   get isEquipableArmor() {
