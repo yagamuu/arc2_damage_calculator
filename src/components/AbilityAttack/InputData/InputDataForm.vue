@@ -345,7 +345,12 @@
               </v-tooltip>
             </v-col>
           </template>
-          <v-col cols="12" sm="3" lg="3" v-if="isMagicAbility">
+          <v-col
+            cols="12"
+            sm="3"
+            lg="3"
+            v-if="target !== 'defense' || isMagicAbility"
+          >
             <input-data-form-text-field
               label="装備MAG"
               :value.sync="equipmentMagic"
