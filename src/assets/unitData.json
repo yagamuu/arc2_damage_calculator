@@ -19943,7 +19943,7 @@
         "basicMagicModifier": 0.9375,
         "basicAgilityModifier": -20,
         "basicMove": 0,
-        "basicMagicDefense": 8,
+        "basicMagicDefense": 11,
         "basicDodge": 0,
         "basicGuard": 4,
         "conditionType": "1D",

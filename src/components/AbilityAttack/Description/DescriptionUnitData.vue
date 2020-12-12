@@ -70,6 +70,36 @@
         }}</v-list-item-content>
       </v-list-item>
       <v-list-item>
+        <v-list-item-content>HP</v-list-item-content>
+        <v-list-item-content class="align-end">{{ hp }}</v-list-item-content>
+      </v-list-item>
+      <v-list-item>
+        <v-list-item-content>MP</v-list-item-content>
+        <v-list-item-content class="align-end">{{ mp }}</v-list-item-content>
+      </v-list-item>
+      <v-list-item>
+        <v-list-item-content>攻撃力</v-list-item-content>
+        <v-list-item-content class="align-end">{{
+          attack
+        }}</v-list-item-content>
+      </v-list-item>
+      <v-list-item>
+        <v-list-item-content>防御力</v-list-item-content>
+        <v-list-item-content class="align-end">{{
+          defense
+        }}</v-list-item-content>
+      </v-list-item>
+      <v-list-item>
+        <v-list-item-content>魔力</v-list-item-content>
+        <v-list-item-content class="align-end">{{ magic }}</v-list-item-content>
+      </v-list-item>
+      <v-list-item>
+        <v-list-item-content>敏捷力</v-list-item-content>
+        <v-list-item-content class="align-end">{{
+          agility
+        }}</v-list-item-content>
+      </v-list-item>
+      <v-list-item>
         <v-list-item-content>基本移動力</v-list-item-content>
         <v-list-item-content class="align-end">{{
           unitData.basicMove
@@ -149,6 +179,7 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import store from "../store";
 import * as find from "@/util/find";
+import * as calc from "@/util/calc";
 
 @Component({
   components: {}
@@ -167,6 +198,83 @@ export default class DescriptionUnitData extends Vue {
 
   get unitData() {
     return find.unitData(this.sharedState.unitData[this.target].unitName);
+  }
+
+  get classData() {
+    return find.classData(this.unitData.className);
+  }
+
+  get hp() {
+    if (this.classData === undefined) {
+      return 0;
+    }
+    return calc.calcParameter(
+      this.classData?.baseHitPoint,
+      store.state.unitData[this.target].appearanceLv,
+      this.classData?.hasAppearanceLvHitPointBonus,
+      store.state.unitData[this.target].lv,
+      this.classData?.growHitPoint
+    );
+  }
+
+  get mp() {
+    if (this.classData === undefined) {
+      return 0;
+    }
+    return calc.calcParameter(
+      this.classData.baseMagicPoint,
+      store.state.unitData[this.target].appearanceLv,
+      this.classData?.hasAppearanceLvMagicPointBonus,
+      store.state.unitData[this.target].lv,
+      this.classData?.growMagicPoint
+    );
+  }
+
+  get attack() {
+    return (
+      calc.fixValue(
+        this.sharedState.unitData[this.target].baseAttack *
+          this.unitData.basicAttackModifier,
+        1,
+        2499
+      ) / 5
+    );
+  }
+
+  get defense() {
+    return (
+      calc.fixValue(
+        this.sharedState.unitData[this.target].baseDefense *
+          this.unitData.basicDefenseModifier,
+        1,
+        2499
+      ) / 5
+    );
+  }
+
+  get magic() {
+    return (
+      calc.fixValue(
+        this.sharedState.unitData[this.target].baseMagic *
+          this.unitData.basicMagicModifier,
+        1,
+        2499
+      ) / 5
+    );
+  }
+
+  get agility() {
+    if (this.classData === undefined) {
+      return 0;
+    }
+    const baseAgility = calc.calcParameter(
+      this.classData.baseAgility,
+      store.state.unitData[this.target].appearanceLv,
+      false,
+      store.state.unitData[this.target].lv,
+      this.classData?.growAgility
+    );
+    return (baseAgility + this.unitData.basicAgilityModifier) / 5;
   }
 
   get title() {
