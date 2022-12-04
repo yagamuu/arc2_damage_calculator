@@ -205,6 +205,17 @@ export default class InputData extends Mixins(Mixin) {
     this.snackbar = true;
   }
 
+  get skillPattern() {
+    const skillPattern = calc.skillPattern;
+    const counterSkillPattern = calc.counterSkillPattern;
+
+    if (this.sharedState.unitData.attack.isCounter) {
+      return counterSkillPattern[this.sharedState.unitData.attack.counterLv];
+    }
+
+    return skillPattern;
+  }
+
   get possibilityDamage() {
     const skillLv = this.sharedState.unitData.attack.isNoWeapon
       ? 0
@@ -213,8 +224,9 @@ export default class InputData extends Mixins(Mixin) {
       if (
         (this.sharedState.unitData.attack.isCritical &&
           skillLv != 0 &&
+          !this.sharedState.unitData.attack.isCounter &&
           index === 7) ||
-        calc.skillPattern[skillLv][index] !== 0
+        this.skillPattern[skillLv][index] !== 0
       ) {
         pre.push(...current);
       }
@@ -223,11 +235,14 @@ export default class InputData extends Mixins(Mixin) {
   }
 
   get minDamage() {
+    if (this.possibilityDamage.length === 0) {
+      return 0;
+    }
     return this.possibilityDamage.reduce((a, b) => Math.min(a, b));
   }
 
   get maxDamage() {
-    return this.possibilityDamage.reduce((a, b) => Math.max(a, b));
+    return this.possibilityDamage.reduce((a, b) => Math.max(a, b), 0);
   }
 
   get expected() {
@@ -237,11 +252,20 @@ export default class InputData extends Mixins(Mixin) {
     const isCritical =
       this.sharedState.unitData.attack.isCritical &&
       !this.sharedState.unitData.attack.isNoWeapon;
+    const isCounter = this.sharedState.unitData.attack.isCounter;
+    const counterLv = this.sharedState.unitData.attack.counterLv;
+
     let result = 0;
     this.sharedState.damageResult.forEach((value, index) => {
       result +=
         ((value.reduce((pre, current) => pre + current) / 6) *
-          calc.skillPatternProbability(skillLv, index, isCritical)) /
+          calc.skillPatternProbability(
+            skillLv,
+            index,
+            isCritical,
+            isCounter,
+            counterLv
+          )) /
         100;
     });
     return Math.floor(result);
@@ -273,7 +297,10 @@ export default class InputData extends Mixins(Mixin) {
   }
 
   get dodge() {
-    if (this.sharedState.unitData.attack.charge > 0) {
+    if (
+      this.sharedState.unitData.attack.charge > 0 &&
+      !this.sharedState.unitData.attack.isCounter
+    ) {
       return 0;
     }
 
@@ -307,13 +334,22 @@ export default class InputData extends Mixins(Mixin) {
     const isCritical =
       this.sharedState.unitData.attack.isCritical &&
       !this.sharedState.unitData.attack.isNoWeapon;
+    const isCounter = this.sharedState.unitData.attack.isCounter;
+    const counterLv = this.sharedState.unitData.attack.counterLv;
+
     const hit = this.hit / 100;
     const guard = this.guardActual / 100;
 
     let result = 0;
     this.sharedState.damageResult.forEach((damageArray, index) => {
       const skillPatternProbability =
-        calc.skillPatternProbability(skillLv, index, isCritical) / 100;
+        calc.skillPatternProbability(
+          skillLv,
+          index,
+          isCritical,
+          isCounter,
+          counterLv
+        ) / 100;
       damageArray.forEach(damage => {
         result +=
           this.damage <= damage ? (skillPatternProbability / 6) * hit : 0;

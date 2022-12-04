@@ -2,7 +2,7 @@ import { ClassData, UnitData, StateInterface } from "@/types";
 import { AbilityAttackStateUnitData } from "@/types/AbilityAttack/State";
 
 // チャージ補正
-export const chargePow = [
+export const chargePowList = [
   1,
   1.75,
   2,
@@ -39,6 +39,86 @@ export const skillPattern = [
   [0, 12.5, 62.5, 12.5, 0, 0, 6.25, 6.25],
   [0, 12.5, 62.5, 12.5, 0, 0, 6.25, 6.25],
   [0, 0, 37.5, 50, 0, 0, 0, 12.5]
+];
+
+// 反撃時の熟練Lvパターン
+export const counterSkillPattern = [
+  // 反撃Lv0
+  [
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0]
+  ],
+  // 反撃Lv1
+  [
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0]
+  ],
+  // 反撃Lv2
+  [
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [93.75, 6.25, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0],
+    [87.5, 12.5, 0, 0, 0, 0, 0, 0]
+  ],
+  // 反撃Lv3
+  [
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0, 0, 0, 0],
+    [87.5, 6.25, 6.25, 0, 0, 0, 0, 0],
+    [75, 12.5, 12.5, 0, 0, 0, 0, 0],
+    [75, 12.5, 12.5, 0, 0, 0, 0, 0],
+    [75, 12.5, 12.5, 0, 0, 0, 0, 0],
+    [75, 12.5, 12.5, 0, 0, 0, 0, 0],
+    [75, 12.5, 12.5, 0, 0, 0, 0, 0],
+    [62.5, 25, 12.5, 0, 0, 0, 0, 0],
+    [12.5, 75, 6.25, 6.25, 0, 0, 0, 0],
+    [12.5, 75, 6.25, 6.25, 0, 0, 0, 0],
+    [12.5, 75, 0, 12.5, 0, 0, 0, 0],
+    [12.5, 75, 0, 12.5, 0, 0, 0, 0],
+    [12.5, 75, 0, 12.5, 0, 0, 0, 0],
+    [12.5, 75, 0, 12.5, 0, 0, 0, 0],
+    [0, 87.5, 0, 12.5, 0, 0, 0, 0]
+  ]
 ];
 
 /**
@@ -415,6 +495,7 @@ export const calcAddDamage = (
  * @param {number} charge チャージ
  * @param {boolean} isSlayer スレイヤー装備補正
  * @param {boolean} isGuard ガード装備補正
+ * @param {boolean} isCounter 反撃か否か
  * @return {number[][]} 計算結果(number[i][j],iがコンボパターン,jが乱数部分)
  */
 export const calcConditionDamage = (
@@ -423,12 +504,15 @@ export const calcConditionDamage = (
   directionPow: number,
   charge: number,
   isSlayer: boolean,
-  isGuard: boolean
+  isGuard: boolean,
+  isCounter: boolean
 ): number[][] => {
   const damageResult = initDamageResult();
   const resistElementPow = isResistElement ? 0.8 : 1;
   const slayerPow = isSlayer ? 1.5 : 1;
   const guardPow = isGuard ? 0.5 : 1;
+  const chargePow = isCounter ? 1 : chargePowList[charge];
+
   for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 6; j++) {
       damageResult[i][j] =
@@ -437,7 +521,7 @@ export const calcConditionDamage = (
             Math.floor(
               Math.floor(
                 Math.floor(damageList[i][j] * resistElementPow) * directionPow
-              ) * chargePow[charge]
+              ) * chargePow
             ) * slayerPow
           ) * guardPow
         ) + 1;
@@ -453,14 +537,22 @@ export const calcConditionDamage = (
  * 熟練Lvパターンの発生率を計算
  * @param {number} skillLv 熟練Lv
  * @param {number} index 元の値
- * @param {number} isCritical クリティカル装備の有無
+ * @param {boolean} isCritical クリティカル装備の有無
+ * @param {boolean} isCounter 反撃か否か
+ * @param {boolean} counterLv 反撃Lv
  * @return {number} 計算結果
  */
 export const skillPatternProbability = (
   skillLv: number,
   index: number,
-  isCritical: boolean
+  isCritical: boolean,
+  isCounter: boolean,
+  counterLv: number
 ): number => {
+  if (isCounter) {
+    return counterSkillPattern[counterLv][skillLv][index];
+  }
+
   if (isCritical && index === 7) {
     return (
       (1 - (84 / 100) * ((100 - skillPattern[skillLv][index]) / 100)) * 100

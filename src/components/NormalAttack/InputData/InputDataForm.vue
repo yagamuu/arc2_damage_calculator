@@ -128,6 +128,16 @@
               class="mt-0"
             ></v-switch>
           </v-col>
+          <v-col cols="12" sm="3" lg="3" v-if="target === 'attack'">
+            <v-switch
+              label="反撃"
+              v-model="isCounter"
+              inset
+              dense
+              hide-details
+              class="mt-0"
+            ></v-switch>
+          </v-col>
         </v-row>
         <v-subheader class="pl-0">装備補正</v-subheader>
         <v-row
@@ -304,7 +314,7 @@
         </v-row>
         <v-subheader class="pl-0">その他</v-subheader>
         <v-row dense v-if="target === 'attack'">
-          <v-col cols="12" sm="4" lg="4" v-if="!isNoWeapon">
+          <v-col cols="12" sm="3" lg="3" v-if="!isNoWeapon">
             <v-select
               :items="formItems.skillLevel"
               v-model="weaponSkillLv"
@@ -312,7 +322,15 @@
               dense
             ></v-select>
           </v-col>
-          <v-col cols="12" sm="4" lg="4">
+          <v-col cols="12" sm="3" lg="3" v-if="isCounter">
+            <v-select
+              :items="formItems.counterLevel"
+              v-model="counterLv"
+              label="反撃Lv"
+              dense
+            ></v-select>
+          </v-col>
+          <v-col cols="12" sm="3" lg="3" v-if="!isCounter">
             <v-select
               :items="formItems.charge"
               v-model="charge"
@@ -320,7 +338,7 @@
               dense
             ></v-select>
           </v-col>
-          <v-col cols="12" sm="4" lg="4">
+          <v-col cols="12" sm="3" lg="3">
             <v-select
               item-text="name"
               item-value="effect"
@@ -578,6 +596,14 @@ export default class InputDataForm extends Mixins(Mixin) {
     this.setIsPoison(isPoison, this.target);
   }
 
+  get isCounter() {
+    return this.sharedState.unitData.attack.isCounter;
+  }
+
+  set isCounter(isCounter: boolean) {
+    this.setIsCounter(isCounter, this.target);
+  }
+
   get isNoWeapon() {
     return this.sharedState.unitData[this.target].isNoWeapon;
   }
@@ -685,6 +711,14 @@ export default class InputDataForm extends Mixins(Mixin) {
 
   set weaponSkillLv(weaponSkillLv: number) {
     this.setWeaponSkillLv(weaponSkillLv, this.target);
+  }
+
+  get counterLv() {
+    return this.sharedState.unitData[this.target].counterLv;
+  }
+
+  set counterLv(counterLv: number) {
+    this.setCounterLv(counterLv, this.target);
   }
 
   get charge() {

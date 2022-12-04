@@ -45,7 +45,6 @@ import * as calc from "@/util/calc";
 })
 export default class Description extends Vue {
   sharedState = store.state;
-  skillPattern = calc.skillPattern;
 
   get skillLv() {
     return this.sharedState.unitData.attack.isNoWeapon
@@ -60,15 +59,40 @@ export default class Description extends Vue {
     );
   }
 
+  get isCounter() {
+    return this.sharedState.unitData.attack.isCounter;
+  }
+
+  get counterLv() {
+    return this.sharedState.unitData.attack.counterLv;
+  }
+
+  get skillPattern() {
+    const skillPattern = calc.skillPattern;
+    const counterSkillPattern = calc.counterSkillPattern;
+
+    if (this.isCounter) {
+      return counterSkillPattern[this.counterLv];
+    }
+
+    return skillPattern;
+  }
+
   isVisibleDamage(index: number) {
-    if (this.isCritical && index === 7) {
+    if (this.isCritical && index === 7 && !this.isCounter) {
       return true;
     }
     return this.skillPattern[this.skillLv][index] > 0 ? true : false;
   }
 
   skillPatternProbability(index: number) {
-    return calc.skillPatternProbability(this.skillLv, index, this.isCritical);
+    return calc.skillPatternProbability(
+      this.skillLv,
+      index,
+      this.isCritical,
+      this.isCounter,
+      this.counterLv
+    );
   }
 }
 </script>

@@ -30,11 +30,13 @@ const initUnitData = (): NormalAttackStateUnitData => {
     equipmentDefense: 0,
     equipmentGuard: 0,
     weaponSkillLv: 1,
+    counterLv: 2,
     charge: 0,
     direction: 0,
     isDying: false,
     isWeekElement: false,
-    isResistElement: false
+    isResistElement: false,
+    isCounter: false
   };
 };
 
@@ -145,6 +147,9 @@ export default {
   setWeaponSkillLvAction(weaponSkillLv: number, key: string) {
     this.state.unitData[key].weaponSkillLv = weaponSkillLv;
   },
+  setCounterLvAction(counterLv: number, key: string) {
+    this.state.unitData[key].counterLv = counterLv;
+  },
   setChargeAction(charge: number, key: string) {
     this.state.unitData[key].charge = charge;
   },
@@ -178,5 +183,8 @@ export default {
   },
   setDamageResultAction(damageResult: number[][]) {
     this.state.damageResult = damageResult;
+  },
+  setIsCounter(isCounter: boolean, key: string) {
+    this.state.unitData[key].isCounter = isCounter;
   }
 };

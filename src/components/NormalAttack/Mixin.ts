@@ -86,6 +86,10 @@ export class Mixin extends Vue {
     store.setIsPoisonAction(isPoison, key);
   }
 
+  setIsCounter(isCounter: boolean, key: string) {
+    store.setIsCounter(isCounter, key);
+  }
+
   setIsNoWeapon(isNoWeapon: boolean, key: string) {
     store.setIsNoWeaponAction(isNoWeapon, key);
   }
@@ -136,6 +140,10 @@ export class Mixin extends Vue {
 
   setWeaponSkillLv(weaponSkillLv: number, key: string) {
     store.setWeaponSkillLvAction(weaponSkillLv, key);
+  }
+
+  setCounterLv(counterLv: number, key: string) {
+    store.setCounterLvAction(counterLv, key);
   }
 
   setCharge(charge: number, key: string) {
@@ -205,27 +213,44 @@ export class Mixin extends Vue {
       );
       store.setBaseDefenseAction(calc.fixValue(baseDefense, 1, 2499), key);
     }
+
+    if (
+      classData.counterLv3 &&
+      store.state.unitData[key].lv >= classData.counterLv3
+    ) {
+      store.setCounterLvAction(3, key);
+    } else if (
+      classData.counterLv2 &&
+      store.state.unitData[key].lv >= classData.counterLv2
+    ) {
+      store.setCounterLvAction(2, key);
+    } else if (
+      classData.counterLv1 &&
+      store.state.unitData[key].lv >= classData.counterLv1
+    ) {
+      store.setCounterLvAction(1, key);
+    } else {
+      store.setCounterLvAction(0, key);
+    }
   }
 
   updateLvAndCheckboxFromUnitName(key: string) {
     const unitName = store.state.unitData[key].unitName;
-    const unitData = this.unitDataList.find(data => data.name === unitName);
+    const unitData = find.unitData(unitName);
 
-    if (unitData?.bookLv) {
-      store.setLvAction(unitData.bookLv, key);
-      store.setAppearanceLvAction(unitData.bookLv, key);
-      store.setAppearanceLvCheckboxAction(false, key);
-      return;
-    }
+    const initUnitLv = unitData?.bookLv
+      ? unitData?.bookLv
+      : initUnitLvList.find(data => data.unitName === unitName)?.lv;
 
-    const initUnitLv = initUnitLvList.find(data => data.unitName === unitName)
-      ?.lv;
     if (!initUnitLv) {
       return;
     }
+
     store.setLvAction(initUnitLv, key);
     store.setAppearanceLvAction(initUnitLv, key);
-    store.setAppearanceLvCheckboxAction(true, key);
+
+    const isCheckAppearAppearanceLv = unitData?.bookLv ? false : true;
+    store.setAppearanceLvCheckboxAction(isCheckAppearAppearanceLv, key);
   }
 
   updateDamageResult() {
@@ -331,7 +356,8 @@ export class Mixin extends Vue {
       directionPow,
       store.state.unitData.attack.charge,
       isSlayer,
-      isGuard
+      isGuard,
+      store.state.unitData.attack.isCounter
     );
 
     this.setDamageResult(damage);

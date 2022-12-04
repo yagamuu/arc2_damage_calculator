@@ -5,9 +5,11 @@ export interface NormalAttackStateUnitData extends StateUnitData {
   isBonusToFlyable: boolean;
   weaponElement: number;
   weaponSkillLv: number;
+  counterLv: number;
   charge: number;
   direction: number;
   isDying: boolean;
+  isCounter: boolean;
 }
 
 export interface NormalAttackStateInterface {

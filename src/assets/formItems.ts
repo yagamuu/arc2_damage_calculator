@@ -62,6 +62,8 @@ export const skillLevel = [...Array(15).keys()].map(i => ++i);
 
 export const abilityLv = [...Array(3).keys()].map(i => ++i);
 
+export const counterLevel = [...Array(4).keys()].map(i => i++);
+
 export const charge = [...Array(16).keys()];
 
 export const direction = [
