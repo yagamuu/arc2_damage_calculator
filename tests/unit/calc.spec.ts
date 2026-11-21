@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as calc from "@/util/calc";
 import * as find from "@/util/find";
-import {
+import type {
   NormalAttackStateInterface,
   NormalAttackStateUnitData
 } from "@/types/NormalAttack/State";
