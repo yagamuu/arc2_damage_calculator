@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+      - run: npm ci
+      # npm run lint (vue-cli-service lint) は vuetify-loader が webpack 5 の
+      # webpack/lib/RuleSet を読めず起動しないため、ESLint を直接呼ぶ（#54 の Vite 移行まで）
+      - run: npx eslint --ext .js,.vue,.ts src tests vitest.config.ts
+      # tsc --noEmit は TypeScript 3.8 が Vitest の型定義を構文解析できず失敗するため、
+      # 型チェックは TypeScript 5 系へ上げる #55 で追加する
+      - run: npm run test:unit
