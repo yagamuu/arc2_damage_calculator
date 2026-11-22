@@ -124,6 +124,15 @@ const armedAttackSide: Partial<NormalAttackStateUnitData> = {
   weaponAttack: 30
 };
 
+// 画面で防御側にトッシュを選んだときに自動入力される値
+const toshDefenseSide: Partial<NormalAttackStateUnitData> = {
+  unitName: "トッシュ",
+  lv: 46,
+  appearanceLv: 46,
+  baseDefense: 105
+};
+const tosh = find.unitData("トッシュ");
+
 describe("通常攻撃", () => {
   describe("攻撃側の攻撃力", () => {
     it("攻撃側・防御側ともに初期入力(アーク)のとき、パターン1は16〜22、パターン2は21〜28になる", () => {
@@ -317,29 +326,39 @@ describe("通常攻撃", () => {
       });
     });
 
-    it("防御側の背後から攻撃すると、防御側の背後のダメージ倍率がかかる", () => {
-      const tosh = find.unitData("トッシュ");
+    it("防御側(トッシュ)の正面から攻撃すると、トッシュの正面のダメージ倍率(0.5倍)がかかる", () => {
       const damage = calcNormalAttackDamage(
-        normalAttackState({ direction: 2 }, { unitName: "トッシュ" }),
-        { directionPow: tosh.backDamegeScale }
-      );
-
-      expect(patternsOf(damage, 1, 2)).toEqual({
-        1: [23, 25, 26, 28, 31, 32],
-        2: [31, 34, 35, 37, 40, 41]
-      });
-    });
-
-    it("防御側の正面から攻撃すると、防御側の正面のダメージ倍率がかかる", () => {
-      const tosh = find.unitData("トッシュ");
-      const damage = calcNormalAttackDamage(
-        normalAttackState({ direction: 0 }, { unitName: "トッシュ" }),
+        normalAttackState({ direction: 0 }, toshDefenseSide),
         { directionPow: tosh.frontDamegeScale }
       );
 
       expect(patternsOf(damage, 1, 2)).toEqual({
-        1: [8, 9, 9, 10, 11, 11],
-        2: [11, 12, 12, 13, 14, 14]
+        1: [9, 10, 10, 11, 12, 12],
+        2: [12, 13, 13, 14, 15, 15]
+      });
+    });
+
+    it("防御側(トッシュ)の左右から攻撃すると、トッシュの左右のダメージ倍率(1倍)がかかる", () => {
+      const damage = calcNormalAttackDamage(
+        normalAttackState({ direction: 1 }, toshDefenseSide),
+        { directionPow: tosh.sideDamegeScale }
+      );
+
+      expect(patternsOf(damage, 1, 2)).toEqual({
+        1: [18, 19, 20, 21, 23, 24],
+        2: [23, 25, 26, 27, 29, 30]
+      });
+    });
+
+    it("防御側(トッシュ)の背後から攻撃すると、トッシュの背後のダメージ倍率(1.5倍)がかかる", () => {
+      const damage = calcNormalAttackDamage(
+        normalAttackState({ direction: 2 }, toshDefenseSide),
+        { directionPow: tosh.backDamegeScale }
+      );
+
+      expect(patternsOf(damage, 1, 2)).toEqual({
+        1: [26, 28, 29, 31, 34, 35],
+        2: [34, 37, 38, 40, 43, 44]
       });
     });
 
@@ -413,7 +432,6 @@ describe("通常攻撃", () => {
     });
 
     it("32767を超えるダメージは、65536を引いた負の値になる", () => {
-      const tosh = find.unitData("トッシュ");
       const damage = calcNormalAttackDamage(
         normalAttackState(
           {
@@ -424,7 +442,7 @@ describe("通常攻撃", () => {
             direction: 2,
             weaponSkillLv: 15
           },
-          { unitName: "トッシュ", baseDefense: 1, isWeekElement: true }
+          { ...toshDefenseSide, baseDefense: 1, isWeekElement: true }
         ),
         { directionPow: tosh.backDamegeScale, isSlayer: true }
       );
