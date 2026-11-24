@@ -22,14 +22,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { defineComponent } from "vue";
 import NormalAttack from "./NormalAttack.vue";
 import AbilityAttack from "./AbilityAttack.vue";
 
-@Component({
-  components: { NormalAttack, AbilityAttack }
-})
-export default class Contents extends Vue {
-  tab = null;
-}
+export default defineComponent({
+  components: { NormalAttack, AbilityAttack },
+  data() {
+    return {
+      tab: null
+    };
+  }
+});
 </script>

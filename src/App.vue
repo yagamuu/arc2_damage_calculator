@@ -8,12 +8,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { defineComponent } from "vue";
 import AppBar from "./components/AppBar.vue";
 import Contents from "./components/Contents.vue";
 
-@Component({
+export default defineComponent({
   components: { AppBar, Contents }
-})
-export default class App extends Vue {}
+});
 </script>

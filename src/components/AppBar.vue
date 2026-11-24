@@ -44,12 +44,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { defineComponent } from "vue";
 
-@Component({
-  components: {}
-})
-export default class AppBar extends Vue {
-  dialog = false;
-}
+export default defineComponent({
+  components: {},
+  data() {
+    return {
+      dialog: false
+    };
+  }
+});
 </script>
