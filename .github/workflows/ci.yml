@@ -19,8 +19,7 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: npm run lint
-      # tsc --noEmit は TypeScript 3.8 が Vitest の型定義を構文解析できず失敗するため、
-      # 型チェックは TypeScript 5 系へ上げる #55 で追加する
+      - run: npm run type-check
       - run: npm run test:unit
       # 公開物の docs/ は移行の完了時（#46 段階3）にだけ更新するため、git の管理対象外の
       # .ci-build/ にビルドし、E2E もそれに対して実行する
