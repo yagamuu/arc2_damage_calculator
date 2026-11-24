@@ -27,6 +27,13 @@ npm run lint
 npm test
 ```
 
+### Run E2E tests
+ビルド済みの `docs/` を配信し、Chromium で操作します。初回のみブラウザのインストールが必要です。
+```
+npx playwright install chromium
+npm run test:e2e
+```
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
