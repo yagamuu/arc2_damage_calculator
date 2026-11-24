@@ -9,15 +9,21 @@ npm install
 
 ### Compiles and hot-reloads for development
 ```
-npm run serve
+npm run dev
 ```
 
 ### Compiles and minifies for production
+公開用のビルドを `docs/`（GitHub Pages の公開物）に出力します。
 ```
 npm run build
 ```
 
-### Lints and fixes files
+`docs/` を書き換えずにビルドを確かめるときは、git の管理対象外の `.ci-build/` に出力します。
+```
+npm run build:temp
+```
+
+### Lints files
 ```
 npm run lint
 ```
@@ -28,14 +34,12 @@ npm test
 ```
 
 ### Run E2E tests
-ビルド済みの `docs/` を配信し、Chromium で操作します。初回のみブラウザのインストールが必要です。
+Chromium で画面を操作します。初回のみブラウザのインストールが必要です。
 ```
 npx playwright install chromium
-npm run test:e2e
+npm run test:e2e:build   # .ci-build/ にビルドし、それに対して実行する
+npm run test:e2e         # コミット済みの docs/ に対して実行する
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## Credits
 各種データ元: [アークザラッド２データベース(ありのす様)](http://arinosu.ari-jigoku.com/arc2/)

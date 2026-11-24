@@ -1,6 +1,8 @@
 .DS_Store
 node_modules
 /dist
+# docs/ を書き換えずにビルドを確かめるための一時出力先
+/.ci-build
 
 # local env files
 .env.local
