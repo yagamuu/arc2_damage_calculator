@@ -28,6 +28,11 @@ npm run build:temp
 npm run lint
 ```
 
+### Type-check
+```
+npm run type-check
+```
+
 ### Run unit tests
 ```
 npm test

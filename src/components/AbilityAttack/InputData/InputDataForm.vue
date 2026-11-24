@@ -373,7 +373,7 @@
           class="pl-0"
           v-if="
             target === 'defense' &&
-              isAbleManipWeekElement | isAbleManipResistElement
+              (isAbleManipWeekElement || isAbleManipResistElement)
           "
           >その他</v-subheader
         >
@@ -415,7 +415,7 @@ export default class InputDataForm extends Mixins(Mixin) {
   @Prop({
     type: String,
     required: true,
-    validator(value) {
+    validator(value: string) {
       return ["attack", "defense"].indexOf(value) !== -1;
     }
   })

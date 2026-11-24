@@ -15,7 +15,6 @@
       <template v-slot:activator="{ on }">
         <v-text-field
           :label="label"
-          :value="value"
           v-model="inputData"
           @keydown="validateForm"
           @keyup="validateForm"

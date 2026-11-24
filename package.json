@@ -6,11 +6,12 @@
     "dev": "vite",
     "build": "vite build",
     "build:temp": "vite build --outDir .ci-build",
-    "lint": "eslint --ext .js,.vue,.ts src tests vite.config.ts vitest.config.ts playwright.config.ts",
+    "lint": "eslint .",
     "test": "npm run test:unit",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "test:e2e:build": "npm run build:temp && E2E_SERVED_DIR=.ci-build playwright test"
+    "test:e2e:build": "npm run build:temp && E2E_SERVED_DIR=.ci-build playwright test",
+    "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@types/clone": "^0.1.30",
@@ -21,18 +22,18 @@
     "vuetify": "^2.6.10"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.1",
-    "@typescript-eslint/eslint-plugin": "^2.26.0",
-    "@typescript-eslint/parser": "^2.26.0",
+    "@types/node": "^24.19.2",
     "@vitejs/plugin-vue2": "^2.3.4",
-    "@vue/eslint-config-prettier": "^6.0.0",
-    "@vue/eslint-config-typescript": "^5.0.2",
-    "eslint": "^6.7.2",
-    "eslint-plugin-prettier": "^3.1.1",
-    "eslint-plugin-vue": "^6.2.2",
-    "prettier": "^1.19.1",
-    "typescript": "~3.8.3",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/eslint-config-typescript": "^14.9.0",
+    "eslint": "^10.15.0",
+    "eslint-plugin-vue": "^10.12.1",
+    "prettier": "^3.10.1",
+    "typescript": "~5.9.3",
     "vite": "^7.3.8",
-    "vitest": "^5.1.1"
+    "vitest": "^5.1.1",
+    "vue-tsc": "3.0.11"
   }
 }

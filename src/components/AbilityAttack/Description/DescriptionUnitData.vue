@@ -188,7 +188,7 @@ export default class DescriptionUnitData extends Vue {
   @Prop({
     type: String,
     required: true,
-    validator(value) {
+    validator(value: string) {
       return ["attack", "defense"].indexOf(value) !== -1;
     }
   })
