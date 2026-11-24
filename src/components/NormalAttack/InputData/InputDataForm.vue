@@ -376,389 +376,384 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Mixins } from "vue-property-decorator";
+import { defineComponent } from "vue";
 import InputDataFormTextField from "@/components/Common/InputDataFormTextField.vue";
 import * as formItems from "@/assets/formItems";
 import * as calc from "@/util/calc";
 import * as find from "@/util/find";
 import { Mixin } from "../Mixin";
 
-@Component({
-  components: { InputDataFormTextField }
-})
-export default class InputDataForm extends Mixins(Mixin) {
-  @Prop({
-    type: String,
-    required: true,
-    validator(value: string) {
-      return ["attack", "defense"].indexOf(value) !== -1;
+export default defineComponent({
+  mixins: [Mixin],
+  components: { InputDataFormTextField },
+  props: {
+    target: {
+      type: String,
+      required: true,
+      validator: (value: string) => ["attack", "defense"].indexOf(value) !== -1
     }
-  })
-  target!: string;
+  },
+  computed: {
+    title() {
+      return this.target === "attack" ? "攻撃側データ" : "防御側データ";
+    },
+    titleIcon() {
+      return this.target === "attack"
+        ? "mdi-sword"
+        : "mdi-shield-cross-outline";
+    },
+    toolBarColor() {
+      return this.target === "attack" ? "red" : "indigo";
+    },
+    formItems() {
+      return formItems;
+    },
+    baseAttackMessage() {
+      const unitData = find.unitData(
+        this.sharedState.unitData[this.target].unitName
+      );
 
-  get title() {
-    return this.target === "attack" ? "攻撃側データ" : "防御側データ";
-  }
+      if (!unitData?.basicAttackModifier) {
+        return "修正値x？";
+      }
 
-  get titleIcon() {
-    return this.target === "attack" ? "mdi-sword" : "mdi-shield-cross-outline";
-  }
+      return "修正値x" + unitData?.basicAttackModifier;
+    },
+    baseDefenseMessage() {
+      const unitData = find.unitData(
+        this.sharedState.unitData[this.target].unitName
+      );
 
-  get toolBarColor() {
-    return this.target === "attack" ? "red" : "indigo";
-  }
+      if (!unitData?.basicDefenseModifier) {
+        return "修正値x？";
+      }
 
-  get formItems() {
-    return formItems;
-  }
+      return "修正値x" + unitData?.basicDefenseModifier;
+    },
+    isEquipableArmor() {
+      const unitData = find.unitData(
+        this.sharedState.unitData[this.target].unitName
+      );
 
-  get baseAttackMessage() {
-    const unitData = find.unitData(
-      this.sharedState.unitData[this.target].unitName
-    );
+      if (!unitData?.isEquipableArmor) {
+        return false;
+      }
 
-    if (!unitData?.basicAttackModifier) {
-      return "修正値x？";
+      return true;
+    },
+    isAbleManipWeekElement() {
+      if (this.attackElement === "無") {
+        return false;
+      }
+      if (
+        this.sharedState.unitData.attack.isBonusToFlyable &&
+        !this.sharedState.unitData.attack.isNoWeapon
+      ) {
+        return false;
+      }
+      return true;
+    },
+    isAbleManipResistElement() {
+      const unitData = find.unitData(
+        this.sharedState.unitData.defense.unitName
+      );
+
+      if (this.attackElement === "無") {
+        return false;
+      }
+      if (
+        this.sharedState.unitData.attack.isBonusToFlyable &&
+        !this.sharedState.unitData.attack.isNoWeapon
+      ) {
+        return false;
+      }
+      if (this.attackElement === unitData?.element) {
+        return false;
+      }
+      return true;
+    },
+    attackElement() {
+      const unitData = find.unitData(this.sharedState.unitData.attack.unitName);
+      return this.sharedState.unitData.attack.weaponElement !== 0 &&
+        !this.sharedState.unitData.attack.isNoWeapon
+        ? formItems.weaponElement[
+            this.sharedState.unitData.attack.weaponElement
+          ].name
+        : unitData?.element;
+    },
+    unitName: {
+      get() {
+        return this.sharedState.unitData[this.target].unitName;
+      },
+      set(unitName: string) {
+        this.setUnitName(unitName, this.target);
+      }
+    },
+    lv: {
+      get() {
+        return this.sharedState.unitData[this.target].lv;
+      },
+      set(lv: number) {
+        lv = calc.fixValue(lv, 1, 1000);
+        this.setLv(lv, this.target);
+      }
+    },
+    appearanceLv: {
+      get() {
+        return this.sharedState.unitData[this.target].appearanceLv;
+      },
+      set(appearanceLv: number) {
+        appearanceLv = calc.fixValue(appearanceLv, 1, 1000);
+        this.setAppearanceLv(appearanceLv, this.target);
+      }
+    },
+    appearanceLvCheckbox: {
+      get() {
+        return this.sharedState.checkbox[this.target].appearanceLv;
+      },
+      set(appearanceLv: boolean) {
+        this.setAppearanceLvCheckbox(appearanceLv, this.target);
+      }
+    },
+    baseAttack: {
+      get() {
+        return this.sharedState.unitData[this.target].baseAttack;
+      },
+      set(baseAttack: number) {
+        baseAttack = calc.fixValue(baseAttack, 1, 2499);
+        this.setBaseAttack(baseAttack, this.target);
+      }
+    },
+    baseAttackCheckbox: {
+      get() {
+        return this.sharedState.checkbox[this.target].baseAttack;
+      },
+      set(baseAttack: boolean) {
+        this.setBaseAttackCheckbox(baseAttack, this.target);
+      }
+    },
+    baseDefense: {
+      get() {
+        return this.sharedState.unitData[this.target].baseDefense;
+      },
+      set(baseDefense: number) {
+        baseDefense = calc.fixValue(baseDefense, 1, 2499);
+        this.setBaseDefense(baseDefense, this.target);
+      }
+    },
+    baseDefenseCheckbox: {
+      get() {
+        return this.sharedState.checkbox[this.target].baseDefense;
+      },
+      set(baseDefense: boolean) {
+        this.setBaseDefenseCheckbox(baseDefense, this.target);
+      }
+    },
+    debuff: {
+      get() {
+        return this.sharedState.unitData[this.target].debuff;
+      },
+      set(debuff: number) {
+        this.setDebuff(debuff, this.target);
+      }
+    },
+    attackBuff: {
+      get() {
+        return this.sharedState.unitData[this.target].attackBuff;
+      },
+      set(attackBuff: number) {
+        this.setAttackBuff(attackBuff, this.target);
+      }
+    },
+    defenseBuff: {
+      get() {
+        return this.sharedState.unitData[this.target].defenseBuff;
+      },
+      set(defenseBuff: number) {
+        this.setDefenseBuff(defenseBuff, this.target);
+      }
+    },
+    isWeekEnemy: {
+      get() {
+        return this.sharedState.unitData[this.target].isWeekEnemy;
+      },
+      set(isWeekEnemy: boolean) {
+        this.setIsWeekEnemy(isWeekEnemy, this.target);
+      }
+    },
+    isPoison: {
+      get() {
+        return this.sharedState.unitData[this.target].isPoison;
+      },
+      set(isPoison: boolean) {
+        this.setIsPoison(isPoison, this.target);
+      }
+    },
+    isCounter: {
+      get() {
+        return this.sharedState.unitData.attack.isCounter;
+      },
+      set(isCounter: boolean) {
+        this.setIsCounter(isCounter, this.target);
+      }
+    },
+    isNoWeapon: {
+      get() {
+        return this.sharedState.unitData[this.target].isNoWeapon;
+      },
+      set(isNoWeapon: boolean) {
+        this.setIsNoWeapon(isNoWeapon, this.target);
+      }
+    },
+    isNoArmor: {
+      get() {
+        return this.sharedState.unitData[this.target].isNoArmor;
+      },
+      set(isNoArmor: boolean) {
+        this.setIsNoArmor(isNoArmor, this.target);
+      }
+    },
+    isCritical: {
+      get() {
+        return this.sharedState.unitData[this.target].isCritical;
+      },
+      set(isCritical: boolean) {
+        this.setIsCritical(isCritical, this.target);
+      }
+    },
+    isBonusToFlyable: {
+      get() {
+        return this.sharedState.unitData[this.target].isBonusToFlyable;
+      },
+      set(isBonusToFlyable: boolean) {
+        this.setIsBonusToFlyable(isBonusToFlyable, this.target);
+      }
+    },
+    weaponAttack: {
+      get() {
+        return this.sharedState.unitData[this.target].weaponAttack;
+      },
+      set(weaponAttack: number) {
+        weaponAttack = calc.fixValue(weaponAttack * 5, 0, 2499) / 5;
+        this.setWeaponAttack(weaponAttack, this.target);
+      }
+    },
+    weaponElement: {
+      get() {
+        return this.sharedState.unitData[this.target].weaponElement;
+      },
+      set(weaponElement: number) {
+        this.setWeaponElement(weaponElement, this.target);
+      }
+    },
+    equipmentAttack: {
+      get() {
+        return this.sharedState.unitData[this.target].equipmentAttack;
+      },
+      set(equipmentAttack: number) {
+        equipmentAttack = calc.fixValue(equipmentAttack * 5, 0, 2499) / 5;
+        this.setEquipmentAttack(equipmentAttack, this.target);
+      }
+    },
+    equipmentSlayer: {
+      get() {
+        return this.sharedState.unitData[this.target].equipmentSlayer;
+      },
+      set(equipmentSlayer: number) {
+        this.setEquipmentSlayer(equipmentSlayer, this.target);
+      }
+    },
+    armorDefense1: {
+      get() {
+        return this.sharedState.unitData[this.target].armorDefense1;
+      },
+      set(armorDefense1: number) {
+        armorDefense1 = calc.fixValue(armorDefense1 * 5, 0, 2499) / 5;
+        this.setArmorDefense1(armorDefense1, this.target);
+      }
+    },
+    armorDefense2: {
+      get() {
+        return this.sharedState.unitData[this.target].armorDefense2;
+      },
+      set(armorDefense2: number) {
+        armorDefense2 = calc.fixValue(armorDefense2 * 5, 0, 2499) / 5;
+        this.setArmorDefense2(armorDefense2, this.target);
+      }
+    },
+    equipmentDefense: {
+      get() {
+        return this.sharedState.unitData[this.target].equipmentDefense;
+      },
+      set(equipmentDefense: number) {
+        equipmentDefense = calc.fixValue(equipmentDefense * 5, 0, 2499) / 5;
+        this.setEquipmentDefense(equipmentDefense, this.target);
+      }
+    },
+    equipmentGuard: {
+      get() {
+        return this.sharedState.unitData[this.target].equipmentGuard;
+      },
+      set(equipmentGuard: number) {
+        this.setEquipmentGuard(equipmentGuard, this.target);
+      }
+    },
+    weaponSkillLv: {
+      get() {
+        return this.sharedState.unitData[this.target].weaponSkillLv;
+      },
+      set(weaponSkillLv: number) {
+        this.setWeaponSkillLv(weaponSkillLv, this.target);
+      }
+    },
+    counterLv: {
+      get() {
+        return this.sharedState.unitData[this.target].counterLv;
+      },
+      set(counterLv: number) {
+        this.setCounterLv(counterLv, this.target);
+      }
+    },
+    charge: {
+      get() {
+        return this.sharedState.unitData[this.target].charge;
+      },
+      set(charge: number) {
+        this.setCharge(charge, this.target);
+      }
+    },
+    direction: {
+      get() {
+        return this.sharedState.unitData[this.target].direction;
+      },
+      set(direction: number) {
+        this.setDirection(direction, this.target);
+      }
+    },
+    isDying: {
+      get() {
+        return this.sharedState.unitData[this.target].isDying;
+      },
+      set(isDying: boolean) {
+        this.setIsDying(isDying, this.target);
+      }
+    },
+    isWeekElement: {
+      get() {
+        return this.sharedState.unitData[this.target].isWeekElement;
+      },
+      set(isWeekElement: boolean) {
+        this.setIsWeekElement(isWeekElement, this.target);
+      }
+    },
+    isResistElement: {
+      get() {
+        return this.sharedState.unitData[this.target].isResistElement;
+      },
+      set(isResistElement: boolean) {
+        this.setIsResistElement(isResistElement, this.target);
+      }
     }
-
-    return "修正値x" + unitData?.basicAttackModifier;
   }
-
-  get baseDefenseMessage() {
-    const unitData = find.unitData(
-      this.sharedState.unitData[this.target].unitName
-    );
-
-    if (!unitData?.basicDefenseModifier) {
-      return "修正値x？";
-    }
-
-    return "修正値x" + unitData?.basicDefenseModifier;
-  }
-
-  get isEquipableArmor() {
-    const unitData = find.unitData(
-      this.sharedState.unitData[this.target].unitName
-    );
-
-    if (!unitData?.isEquipableArmor) {
-      return false;
-    }
-
-    return true;
-  }
-
-  get isAbleManipWeekElement() {
-    if (this.attackElement === "無") {
-      return false;
-    }
-    if (
-      this.sharedState.unitData.attack.isBonusToFlyable &&
-      !this.sharedState.unitData.attack.isNoWeapon
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  get isAbleManipResistElement() {
-    const unitData = find.unitData(this.sharedState.unitData.defense.unitName);
-
-    if (this.attackElement === "無") {
-      return false;
-    }
-    if (
-      this.sharedState.unitData.attack.isBonusToFlyable &&
-      !this.sharedState.unitData.attack.isNoWeapon
-    ) {
-      return false;
-    }
-    if (this.attackElement === unitData?.element) {
-      return false;
-    }
-    return true;
-  }
-
-  get attackElement() {
-    const unitData = find.unitData(this.sharedState.unitData.attack.unitName);
-    return this.sharedState.unitData.attack.weaponElement !== 0 &&
-      !this.sharedState.unitData.attack.isNoWeapon
-      ? formItems.weaponElement[this.sharedState.unitData.attack.weaponElement]
-          .name
-      : unitData?.element;
-  }
-
-  get unitName() {
-    return this.sharedState.unitData[this.target].unitName;
-  }
-
-  set unitName(unitName: string) {
-    this.setUnitName(unitName, this.target);
-  }
-
-  get lv() {
-    return this.sharedState.unitData[this.target].lv;
-  }
-
-  set lv(lv: number) {
-    lv = calc.fixValue(lv, 1, 1000);
-    this.setLv(lv, this.target);
-  }
-
-  get appearanceLv() {
-    return this.sharedState.unitData[this.target].appearanceLv;
-  }
-
-  set appearanceLv(appearanceLv: number) {
-    appearanceLv = calc.fixValue(appearanceLv, 1, 1000);
-    this.setAppearanceLv(appearanceLv, this.target);
-  }
-
-  get appearanceLvCheckbox() {
-    return this.sharedState.checkbox[this.target].appearanceLv;
-  }
-
-  set appearanceLvCheckbox(appearanceLv: boolean) {
-    this.setAppearanceLvCheckbox(appearanceLv, this.target);
-  }
-
-  get baseAttack() {
-    return this.sharedState.unitData[this.target].baseAttack;
-  }
-
-  set baseAttack(baseAttack: number) {
-    baseAttack = calc.fixValue(baseAttack, 1, 2499);
-    this.setBaseAttack(baseAttack, this.target);
-  }
-
-  get baseAttackCheckbox() {
-    return this.sharedState.checkbox[this.target].baseAttack;
-  }
-
-  set baseAttackCheckbox(baseAttack: boolean) {
-    this.setBaseAttackCheckbox(baseAttack, this.target);
-  }
-
-  get baseDefense() {
-    return this.sharedState.unitData[this.target].baseDefense;
-  }
-
-  set baseDefense(baseDefense: number) {
-    baseDefense = calc.fixValue(baseDefense, 1, 2499);
-    this.setBaseDefense(baseDefense, this.target);
-  }
-
-  get baseDefenseCheckbox() {
-    return this.sharedState.checkbox[this.target].baseDefense;
-  }
-
-  set baseDefenseCheckbox(baseDefense: boolean) {
-    this.setBaseDefenseCheckbox(baseDefense, this.target);
-  }
-
-  get debuff() {
-    return this.sharedState.unitData[this.target].debuff;
-  }
-
-  set debuff(debuff: number) {
-    this.setDebuff(debuff, this.target);
-  }
-
-  get attackBuff() {
-    return this.sharedState.unitData[this.target].attackBuff;
-  }
-
-  set attackBuff(attackBuff: number) {
-    this.setAttackBuff(attackBuff, this.target);
-  }
-
-  get defenseBuff() {
-    return this.sharedState.unitData[this.target].defenseBuff;
-  }
-
-  set defenseBuff(defenseBuff: number) {
-    this.setDefenseBuff(defenseBuff, this.target);
-  }
-
-  get isWeekEnemy() {
-    return this.sharedState.unitData[this.target].isWeekEnemy;
-  }
-
-  set isWeekEnemy(isWeekEnemy: boolean) {
-    this.setIsWeekEnemy(isWeekEnemy, this.target);
-  }
-
-  get isPoison() {
-    return this.sharedState.unitData[this.target].isPoison;
-  }
-
-  set isPoison(isPoison: boolean) {
-    this.setIsPoison(isPoison, this.target);
-  }
-
-  get isCounter() {
-    return this.sharedState.unitData.attack.isCounter;
-  }
-
-  set isCounter(isCounter: boolean) {
-    this.setIsCounter(isCounter, this.target);
-  }
-
-  get isNoWeapon() {
-    return this.sharedState.unitData[this.target].isNoWeapon;
-  }
-
-  set isNoWeapon(isNoWeapon: boolean) {
-    this.setIsNoWeapon(isNoWeapon, this.target);
-  }
-
-  get isNoArmor() {
-    return this.sharedState.unitData[this.target].isNoArmor;
-  }
-
-  set isNoArmor(isNoArmor: boolean) {
-    this.setIsNoArmor(isNoArmor, this.target);
-  }
-
-  get isCritical() {
-    return this.sharedState.unitData[this.target].isCritical;
-  }
-
-  set isCritical(isCritical: boolean) {
-    this.setIsCritical(isCritical, this.target);
-  }
-
-  get isBonusToFlyable() {
-    return this.sharedState.unitData[this.target].isBonusToFlyable;
-  }
-
-  set isBonusToFlyable(isBonusToFlyable: boolean) {
-    this.setIsBonusToFlyable(isBonusToFlyable, this.target);
-  }
-
-  get weaponAttack() {
-    return this.sharedState.unitData[this.target].weaponAttack;
-  }
-
-  set weaponAttack(weaponAttack: number) {
-    weaponAttack = calc.fixValue(weaponAttack * 5, 0, 2499) / 5;
-    this.setWeaponAttack(weaponAttack, this.target);
-  }
-
-  get weaponElement() {
-    return this.sharedState.unitData[this.target].weaponElement;
-  }
-
-  set weaponElement(weaponElement: number) {
-    this.setWeaponElement(weaponElement, this.target);
-  }
-
-  get equipmentAttack() {
-    return this.sharedState.unitData[this.target].equipmentAttack;
-  }
-
-  set equipmentAttack(equipmentAttack: number) {
-    equipmentAttack = calc.fixValue(equipmentAttack * 5, 0, 2499) / 5;
-    this.setEquipmentAttack(equipmentAttack, this.target);
-  }
-
-  get equipmentSlayer() {
-    return this.sharedState.unitData[this.target].equipmentSlayer;
-  }
-
-  set equipmentSlayer(equipmentSlayer: number) {
-    this.setEquipmentSlayer(equipmentSlayer, this.target);
-  }
-
-  get armorDefense1() {
-    return this.sharedState.unitData[this.target].armorDefense1;
-  }
-
-  set armorDefense1(armorDefense1: number) {
-    armorDefense1 = calc.fixValue(armorDefense1 * 5, 0, 2499) / 5;
-    this.setArmorDefense1(armorDefense1, this.target);
-  }
-
-  get armorDefense2() {
-    return this.sharedState.unitData[this.target].armorDefense2;
-  }
-
-  set armorDefense2(armorDefense2: number) {
-    armorDefense2 = calc.fixValue(armorDefense2 * 5, 0, 2499) / 5;
-    this.setArmorDefense2(armorDefense2, this.target);
-  }
-
-  get equipmentDefense() {
-    return this.sharedState.unitData[this.target].equipmentDefense;
-  }
-
-  set equipmentDefense(equipmentDefense: number) {
-    equipmentDefense = calc.fixValue(equipmentDefense * 5, 0, 2499) / 5;
-    this.setEquipmentDefense(equipmentDefense, this.target);
-  }
-
-  get equipmentGuard() {
-    return this.sharedState.unitData[this.target].equipmentGuard;
-  }
-
-  set equipmentGuard(equipmentGuard: number) {
-    this.setEquipmentGuard(equipmentGuard, this.target);
-  }
-
-  get weaponSkillLv() {
-    return this.sharedState.unitData[this.target].weaponSkillLv;
-  }
-
-  set weaponSkillLv(weaponSkillLv: number) {
-    this.setWeaponSkillLv(weaponSkillLv, this.target);
-  }
-
-  get counterLv() {
-    return this.sharedState.unitData[this.target].counterLv;
-  }
-
-  set counterLv(counterLv: number) {
-    this.setCounterLv(counterLv, this.target);
-  }
-
-  get charge() {
-    return this.sharedState.unitData[this.target].charge;
-  }
-
-  set charge(charge: number) {
-    this.setCharge(charge, this.target);
-  }
-
-  get direction() {
-    return this.sharedState.unitData[this.target].direction;
-  }
-
-  set direction(direction: number) {
-    this.setDirection(direction, this.target);
-  }
-
-  get isDying() {
-    return this.sharedState.unitData[this.target].isDying;
-  }
-
-  set isDying(isDying: boolean) {
-    this.setIsDying(isDying, this.target);
-  }
-
-  get isWeekElement() {
-    return this.sharedState.unitData[this.target].isWeekElement;
-  }
-
-  set isWeekElement(isWeekElement: boolean) {
-    this.setIsWeekElement(isWeekElement, this.target);
-  }
-
-  get isResistElement() {
-    return this.sharedState.unitData[this.target].isResistElement;
-  }
-
-  set isResistElement(isResistElement: boolean) {
-    this.setIsResistElement(isResistElement, this.target);
-  }
-}
+});
 </script>

@@ -35,64 +35,63 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { defineComponent } from "vue";
 import DescriptionUnitData from "./Description/DescriptionUnitData.vue";
 import store from "./store";
 import * as calc from "@/util/calc";
 
-@Component({
-  components: { DescriptionUnitData }
-})
-export default class Description extends Vue {
-  sharedState = store.state;
+export default defineComponent({
+  components: { DescriptionUnitData },
+  data() {
+    return {
+      sharedState: store.state
+    };
+  },
+  computed: {
+    skillLv() {
+      return this.sharedState.unitData.attack.isNoWeapon
+        ? 0
+        : this.sharedState.unitData.attack.weaponSkillLv;
+    },
+    isCritical() {
+      return (
+        this.sharedState.unitData.attack.isCritical &&
+        !this.sharedState.unitData.attack.isNoWeapon
+      );
+    },
+    isCounter() {
+      return this.sharedState.unitData.attack.isCounter;
+    },
+    counterLv() {
+      return this.sharedState.unitData.attack.counterLv;
+    },
+    skillPattern() {
+      const skillPattern = calc.skillPattern;
+      const counterSkillPattern = calc.counterSkillPattern;
 
-  get skillLv() {
-    return this.sharedState.unitData.attack.isNoWeapon
-      ? 0
-      : this.sharedState.unitData.attack.weaponSkillLv;
-  }
+      if (this.isCounter) {
+        return counterSkillPattern[this.counterLv];
+      }
 
-  get isCritical() {
-    return (
-      this.sharedState.unitData.attack.isCritical &&
-      !this.sharedState.unitData.attack.isNoWeapon
-    );
-  }
-
-  get isCounter() {
-    return this.sharedState.unitData.attack.isCounter;
-  }
-
-  get counterLv() {
-    return this.sharedState.unitData.attack.counterLv;
-  }
-
-  get skillPattern() {
-    const skillPattern = calc.skillPattern;
-    const counterSkillPattern = calc.counterSkillPattern;
-
-    if (this.isCounter) {
-      return counterSkillPattern[this.counterLv];
+      return skillPattern;
     }
-
-    return skillPattern;
-  }
-
-  isVisibleDamage(index: number) {
-    if (this.isCritical && index === 7 && !this.isCounter) {
-      return true;
+  },
+  methods: {
+    isVisibleDamage(index: number) {
+      if (this.isCritical && index === 7 && !this.isCounter) {
+        return true;
+      }
+      return this.skillPattern[this.skillLv][index] > 0 ? true : false;
+    },
+    skillPatternProbability(index: number) {
+      return calc.skillPatternProbability(
+        this.skillLv,
+        index,
+        this.isCritical,
+        this.isCounter,
+        this.counterLv
+      );
     }
-    return this.skillPattern[this.skillLv][index] > 0 ? true : false;
   }
-
-  skillPatternProbability(index: number) {
-    return calc.skillPatternProbability(
-      this.skillLv,
-      index,
-      this.isCritical,
-      this.isCounter,
-      this.counterLv
-    );
-  }
-}
+});
 </script>
