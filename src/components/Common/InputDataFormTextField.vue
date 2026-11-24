@@ -34,72 +34,60 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { defineComponent } from "vue";
 
-@Component({
-  components: {}
-})
-export default class InputDataFormTextField extends Vue {
-  @Prop({ type: Boolean, default: false })
-  hasCheckbox!: boolean;
-
-  @Prop({ type: String, default: "" })
-  checkboxTooltip!: string;
-
-  @Prop({ type: String, default: "" })
-  label!: string;
-
-  @Prop({ type: Number, default: 0 })
-  min!: number;
-
-  @Prop({ type: Number, default: 0 })
-  max!: number;
-
-  @Prop({ type: String, default: "" })
-  messages!: string;
-
-  @Prop({ type: String, default: "" })
-  tooltip!: string;
-
-  @Prop({ type: Number, default: 0 })
-  value!: number;
-
-  @Prop({ type: Boolean, default: false })
-  checkbox!: boolean;
-
-  enabled = false;
-
-  get isDisabled() {
-    return this.hasCheckbox === true && this.inputDataCheckbox === false;
-  }
-
-  get inputData() {
-    return this.value;
-  }
-
-  set inputData(value) {
-    this.$emit("update:value", value);
-  }
-
-  get inputDataCheckbox() {
-    return this.checkbox;
-  }
-
-  set inputDataCheckbox(value) {
-    this.$emit("update:checkbox", value);
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  validateForm(event: any) {
-    if (event.target.value > this.max) {
-      event.target.value = this.max;
-      event.preventDefault();
+export default defineComponent({
+  components: {},
+  props: {
+    hasCheckbox: { type: Boolean, default: false },
+    checkboxTooltip: { type: String, default: "" },
+    label: { type: String, default: "" },
+    min: { type: Number, default: 0 },
+    max: { type: Number, default: 0 },
+    messages: { type: String, default: "" },
+    tooltip: { type: String, default: "" },
+    value: { type: Number, default: 0 },
+    checkbox: { type: Boolean, default: false }
+  },
+  data() {
+    return {
+      enabled: false
+    };
+  },
+  computed: {
+    isDisabled(): boolean {
+      return this.hasCheckbox === true && this.inputDataCheckbox === false;
+    },
+    inputData: {
+      get(): number {
+        return this.value;
+      },
+      set(value: number) {
+        this.$emit("update:value", value);
+      }
+    },
+    inputDataCheckbox: {
+      get(): boolean {
+        return this.checkbox;
+      },
+      set(value: boolean) {
+        this.$emit("update:checkbox", value);
+      }
     }
+  },
+  methods: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    validateForm(event: any) {
+      if (event.target.value > this.max) {
+        event.target.value = this.max;
+        event.preventDefault();
+      }
 
-    if (event.target.value < this.min) {
-      event.target.value = this.min;
-      event.preventDefault();
+      if (event.target.value < this.min) {
+        event.target.value = this.min;
+        event.preventDefault();
+      }
     }
   }
-}
+});
 </script>

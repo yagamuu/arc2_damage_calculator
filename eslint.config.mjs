@@ -32,6 +32,8 @@ export default defineConfigWithVueTs(
       // ESLint 9 で caughtErrors の既定が "none" から "all" に変わった。移行では挙動を変えないため、
       // 使わない catch の引数（catch (e)）は以前と同じく指摘しない
       "@typescript-eslint/no-unused-vars": ["error", { caughtErrors: "none" }],
+      // クラス構文では検査されていなかった既存の1語のコンポーネント名。移行のためにファイル名は変えない
+      "vue/multi-word-component-names": ["error", { ignores: ["Contents"] }],
       // 以下は ESLint/typescript-eslint の更新で推奨に加わった、または強まったルール。
       // 直すには計算ロジックや型に手を入れる必要があり移行の範囲外のため、警告に留める（#55 の PR に一覧）
       "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
