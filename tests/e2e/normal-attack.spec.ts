@@ -1,4 +1,5 @@
-import { test, expect, Page, Locator } from "@playwright/test";
+import { Page, Locator } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 // Vue/Vuetify のバージョンに依存しないよう、内部のクラス名ではなく見出しの文言とラベルで
 // 攻撃側・防御側の入力欄のまとまりを探す（両方に「ユニット」等の同じラベルがあるため）
@@ -12,52 +13,110 @@ const sideCard = (
     .filter({ has: page.getByLabel("ユニット", { exact: true }) })
     .last();
 
+const openNormalAttack = async (page: Page) => {
+  await page.goto("/");
+  return {
+    attackSide: sideCard(page, "攻撃側データ"),
+    defenseSide: sideCard(page, "防御側データ"),
+    result: page.getByText(/ダメージ\(ヒット\)：/)
+  };
+};
+
+const field = (card: Locator, label: string): Locator =>
+  card.getByLabel(label, { exact: true });
+
 const selectUnit = async (
   page: Page,
   card: Locator,
   unitName: string
 ): Promise<void> => {
-  const field = card.getByLabel("ユニット", { exact: true });
-  await field.click();
-  await field.fill(unitName);
+  await field(card, "ユニット").click();
+  await field(card, "ユニット").fill(unitName);
   await page.getByRole("option", { name: unitName, exact: true }).click();
+};
+
+// Vuetify 2 のスイッチは input の上に波紋用の要素が重なっていて input を直接操作できないため、
+// 利用者と同じくラベルをクリックして切り替える
+const turnOnSwitch = async (card: Locator, label: string): Promise<void> => {
+  await card.getByText(label, { exact: true }).click();
+  await expect(field(card, label)).toBeChecked();
 };
 
 test.describe("通常攻撃", () => {
   test("攻撃側と防御側のユニットを選ぶと、パラメータが自動で入り、ダメージが表示される", async ({
     page
   }) => {
-    await page.goto("/");
-    const attackSide = sideCard(page, "攻撃側データ");
-    const defenseSide = sideCard(page, "防御側データ");
-    const result = page.getByText(/ダメージ\(ヒット\)：/);
+    const { attackSide, defenseSide, result } = await openNormalAttack(page);
     await expect(result).toContainText("ダメージ(ヒット)：16～28");
 
     await selectUnit(page, attackSide, "トッシュ");
 
-    await expect(attackSide.getByLabel("Lv", { exact: true })).toHaveValue(
-      "46"
-    );
-    await expect(attackSide.getByLabel("登場Lv", { exact: true })).toHaveValue(
-      "46"
-    );
-    await expect(
-      attackSide.getByLabel("基本攻撃力内部値", { exact: true })
-    ).toHaveValue("170");
+    await expect(field(attackSide, "Lv")).toHaveValue("46");
+    await expect(field(attackSide, "登場Lv")).toHaveValue("46");
+    await expect(field(attackSide, "基本攻撃力内部値")).toHaveValue("170");
     await expect(result).toContainText("ダメージ(ヒット)：35～52");
 
     await selectUnit(page, defenseSide, "イーガ");
 
-    await expect(defenseSide.getByLabel("Lv", { exact: true })).toHaveValue(
-      "44"
-    );
-    await expect(defenseSide.getByLabel("登場Lv", { exact: true })).toHaveValue(
-      "44"
-    );
-    await expect(
-      defenseSide.getByLabel("基本防御力内部値", { exact: true })
-    ).toHaveValue("58");
+    await expect(field(defenseSide, "Lv")).toHaveValue("44");
+    await expect(field(defenseSide, "登場Lv")).toHaveValue("44");
+    await expect(field(defenseSide, "基本防御力内部値")).toHaveValue("58");
     await expect(result).toContainText("ダメージ(ヒット)：51～68");
     await expect(result).toContainText("ダメージ(ヒット)期待値：55");
+  });
+
+  test("Lvを変えたり、クリティカル・瀕死を切り替えたりすると、ダメージが変わる", async ({
+    page
+  }) => {
+    const { attackSide, defenseSide, result } = await openNormalAttack(page);
+    await expect(result).toContainText("ダメージ(ヒット)：16～28");
+
+    await field(attackSide, "Lv").fill("60");
+
+    await expect(field(attackSide, "基本攻撃力内部値")).toHaveValue("149");
+    await expect(result).toContainText("ダメージ(ヒット)：26～42");
+
+    await turnOnSwitch(attackSide, "クリティカル");
+
+    await expect(result).toContainText("ダメージ(ヒット)：26～92");
+    await expect(result).toContainText("ダメージ(ヒット)期待値：39");
+
+    await turnOnSwitch(defenseSide, "瀕死");
+
+    await expect(result).toContainText("ダメージ(ヒット)：17～83");
+    await expect(result).toContainText("ダメージ(ヒット)期待値：30");
+  });
+
+  test("入れ替えボタンで攻撃側と防御側の入力が入れ替わり、リセットボタンで初期状態に戻る", async ({
+    page
+  }) => {
+    const { attackSide, defenseSide, result } = await openNormalAttack(page);
+    await selectUnit(page, attackSide, "トッシュ");
+    await selectUnit(page, defenseSide, "イーガ");
+    await expect(result).toContainText("ダメージ(ヒット)：51～68");
+
+    // 入れ替えボタンはアイコンだけで名前を持たないため、アプリのテンプレートが指定しているアイコン名で探す
+    await attackSide
+      .getByRole("button")
+      .filter({ has: page.locator(".mdi-swap-vertical") })
+      .click();
+
+    await expect(field(attackSide, "ユニット")).toHaveValue("イーガ");
+    await expect(field(attackSide, "Lv")).toHaveValue("44");
+    await expect(field(attackSide, "基本攻撃力内部値")).toHaveValue("162");
+    await expect(field(defenseSide, "ユニット")).toHaveValue("トッシュ");
+    await expect(field(defenseSide, "Lv")).toHaveValue("46");
+    await expect(field(defenseSide, "基本防御力内部値")).toHaveValue("105");
+    await expect(result).toContainText("ダメージ(ヒット)：17～26");
+
+    await page.getByRole("button", { name: "入力項目のリセット" }).click();
+
+    for (const side of [attackSide, defenseSide]) {
+      await expect(field(side, "ユニット")).toHaveValue("アーク");
+      await expect(field(side, "Lv")).toHaveValue("47");
+    }
+    await expect(field(attackSide, "基本攻撃力内部値")).toHaveValue("123");
+    await expect(field(defenseSide, "基本防御力内部値")).toHaveValue("112");
+    await expect(result).toContainText("ダメージ(ヒット)：16～28");
   });
 });
