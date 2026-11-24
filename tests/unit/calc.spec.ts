@@ -5,6 +5,10 @@ import type {
   NormalAttackStateInterface,
   NormalAttackStateUnitData
 } from "@/types/NormalAttack/State";
+import type {
+  AbilityAttackStateInterface,
+  AbilityAttackStateUnitData
+} from "@/types/AbilityAttack/State";
 
 const initialArcUnitData = (): NormalAttackStateUnitData => ({
   unitName: "アーク",
@@ -451,6 +455,462 @@ describe("通常攻撃", () => {
         3: [20008, 20422, 20845, 21259, 21691, 22114],
         4: [22006, 22465, 22933, 23392, 23869, 24328],
         8: [30025, 30655, 31294, 31924, 32545, -32352]
+      });
+    });
+  });
+});
+
+const initialArcAbilityUnitData = (): AbilityAttackStateUnitData => ({
+  unitName: "アーク",
+  lv: 47,
+  appearanceLv: 47,
+  baseAttack: 123,
+  baseDefense: 112,
+  debuff: 0,
+  attackBuff: 0,
+  defenseBuff: 0,
+  isWeekEnemy: false,
+  isPoison: false,
+  isNoWeapon: false,
+  isNoArmor: false,
+  weaponAttack: 0,
+  equipmentAttack: 0,
+  equipmentSlayer: 0,
+  armorDefense1: 0,
+  armorDefense2: 0,
+  equipmentDefense: 0,
+  equipmentGuard: 0,
+  isWeekElement: false,
+  isResistElement: false,
+  abilityName: "バーングラウンド",
+  abilityLv: 1,
+  baseMagic: 107,
+  magicBuff: 0,
+  equipmentMagic: 0,
+  equipmentMagicDefense: 0
+});
+
+const abilityAttackState = (
+  attackSide: Partial<AbilityAttackStateUnitData> = {},
+  defenseSide: Partial<AbilityAttackStateUnitData> = {}
+): AbilityAttackStateInterface => ({
+  unitData: {
+    attack: { ...initialArcAbilityUnitData(), ...attackSide },
+    defense: { ...initialArcAbilityUnitData(), ...defenseSide }
+  },
+  checkbox: {
+    attack: {
+      appearanceLv: true,
+      baseAttack: false,
+      baseDefense: false,
+      baseMagic: false
+    },
+    defense: {
+      appearanceLv: true,
+      baseAttack: false,
+      baseDefense: false,
+      baseMagic: false
+    }
+  },
+  damageResult: calc.initAbilityDamageResult()
+});
+
+// 画面の特殊能力タブで攻撃側にトッシュを選んで保存したときの値（基本防御力内部値は画面に出ないため保存データから取った）
+const toshAbilityAttackSide: Partial<AbilityAttackStateUnitData> = {
+  unitName: "トッシュ",
+  lv: 46,
+  appearanceLv: 46,
+  baseAttack: 170,
+  baseDefense: 105,
+  baseMagic: 69
+};
+
+const calcMagicOf = (unitData: AbilityAttackStateUnitData): number => {
+  const unit = find.unitData(unitData.unitName);
+  return calc.calcMagic(
+    calc.calcBasicMagic(unitData, unit, find.classData(unit.className)),
+    unitData.equipmentMagic
+  );
+};
+
+const calcAbilityAttackDamage = (
+  state: AbilityAttackStateInterface,
+  {
+    isSlayer = false,
+    isGuard = false
+  }: Partial<Pick<DerivedConditions, "isSlayer" | "isGuard">> = {}
+): number[] => {
+  const { attack: attackSide, defense: defenseSide } = state.unitData;
+  const attackUnit = find.unitData(attackSide.unitName);
+  const defenseUnit = find.unitData(defenseSide.unitName);
+  const ability = find.abilityData(attackSide.abilityName);
+  const attackerMagic = calcMagicOf(attackSide);
+
+  let power: number;
+  let difference: number;
+  if (ability.type === "攻撃力") {
+    const attack = calc.calcAttack(
+      calc.calcBasicAttack(
+        state,
+        attackUnit,
+        find.classData(attackUnit.className)
+      ),
+      state
+    );
+    const defense = calc.calcDefense(
+      calc.calcBasicDefense(
+        state,
+        defenseUnit,
+        find.classData(defenseUnit.className)
+      ),
+      state,
+      defenseSide.isNoArmor
+    );
+    power = Math.floor(attack / 5);
+    difference = attackerMagic - defense;
+  } else {
+    power = Math.floor(attackerMagic / 5);
+    difference = attackerMagic - calcMagicOf(defenseSide);
+  }
+  const mp = [ability.mp1, ability.mp2, ability.mp3][attackSide.abilityLv - 1];
+  const magicDefense =
+    defenseUnit.basicMagicDefense + defenseSide.equipmentMagicDefense;
+
+  return calc.calcAbilityDamage(
+    power,
+    ability.power,
+    mp,
+    difference,
+    magicDefense,
+    isSlayer,
+    isGuard,
+    defenseSide.isWeekElement,
+    defenseSide.isResistElement
+  );
+};
+
+// 画面には48通りのダメージの並びは出ず、「入力値以上のダメージが発生する確率」から
+// 各ダメージが何通り出るかだけが読み取れる。そのため期待値は { ダメージ: 発生数 } で持つ
+const damageCountsOf = (damage: number[]): Record<number, number> =>
+  damage.reduce<Record<number, number>>(
+    (counts, value) => ({ ...counts, [value]: (counts[value] ?? 0) + 1 }),
+    {}
+  );
+
+describe("特殊能力", () => {
+  describe("魔力に依存する特殊能力(アークのバーングラウンド)", () => {
+    it("攻撃側・防御側ともに初期入力(アーク)のとき、ダメージは25〜31になる", () => {
+      const damage = calcAbilityAttackDamage(abilityAttackState());
+
+      expect(damageCountsOf(damage)).toEqual({
+        25: 4,
+        26: 9,
+        27: 10,
+        28: 4,
+        29: 10,
+        30: 9,
+        31: 2
+      });
+    });
+
+    it("特殊能力Lv3では、Lv3のMP補正がかかる", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({ abilityLv: 3 })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        31: 8,
+        32: 5,
+        33: 10,
+        34: 4,
+        35: 10,
+        36: 5,
+        37: 6
+      });
+    });
+
+    it("魔力上昇・装備MAGがあると、攻撃側の魔力が上がる", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({ magicBuff: 1, equipmentMagic: 10 })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        58: 1,
+        59: 3,
+        60: 5,
+        61: 3,
+        62: 6,
+        63: 3,
+        64: 5,
+        65: 3,
+        67: 5,
+        68: 3,
+        69: 6,
+        70: 3,
+        71: 2
+      });
+    });
+
+    it("魔力低下を受けると、攻撃側の魔力が下がる", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({ magicBuff: 2 })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        17: 9,
+        18: 13,
+        19: 6,
+        20: 19,
+        21: 1
+      });
+    });
+
+    it("ウィークエネミーを受けると、基本魔力内部値ではなくLvから求めた魔力になる", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({ isWeekEnemy: true })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({ 7: 42, 8: 6 });
+    });
+
+    it("防御側の魔力が攻撃側を上回ると、能力差の分だけダメージが減る", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({}, { magicBuff: 1 })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        22: 4,
+        23: 9,
+        24: 10,
+        25: 9,
+        26: 10,
+        27: 6
+      });
+    });
+
+    it("攻撃側の魔力が防御側を100より大きく上回ると、能力差による増加は50%で頭打ちになる", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({ baseMagic: 2499 })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        873: 1,
+        877: 1,
+        881: 1,
+        885: 1,
+        889: 1,
+        894: 1,
+        897: 1,
+        901: 1,
+        906: 1,
+        909: 1,
+        914: 1,
+        918: 1,
+        921: 1,
+        926: 1,
+        930: 1,
+        934: 1,
+        938: 1,
+        942: 1,
+        946: 1,
+        950: 1,
+        954: 1,
+        958: 1,
+        962: 1,
+        966: 1,
+        970: 1,
+        975: 1,
+        978: 1,
+        982: 1,
+        987: 1,
+        990: 1,
+        995: 1,
+        999: 1,
+        1002: 1,
+        1007: 1,
+        1011: 1,
+        1015: 1,
+        1019: 1,
+        1023: 1,
+        1027: 1,
+        1031: 1,
+        1035: 1,
+        1039: 1,
+        1043: 1,
+        1047: 1,
+        1051: 1,
+        1056: 1,
+        1059: 1,
+        1063: 1
+      });
+    });
+
+    it("防御側の魔力が攻撃側を100より大きく上回ると、能力差による減少は50%で頭打ちになる", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({}, { baseMagic: 2499 })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({ 13: 4, 14: 19, 15: 14, 16: 11 });
+    });
+
+    it("防御側に装備魔防御があると、魔防御の分だけダメージが減る", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({}, { equipmentMagicDefense: 3 })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        16: 4,
+        17: 14,
+        18: 9,
+        19: 15,
+        20: 6
+      });
+    });
+
+    it("属性弱点のときは、ダメージが1.25倍になる", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({}, { isWeekElement: true })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        31: 4,
+        32: 9,
+        33: 5,
+        34: 5,
+        35: 9,
+        36: 5,
+        37: 9,
+        38: 2
+      });
+    });
+
+    it("属性耐性のときは、ダメージが0.8倍になる", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({}, { isResistElement: true })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        20: 4,
+        21: 14,
+        22: 5,
+        23: 14,
+        24: 9,
+        25: 2
+      });
+    });
+
+    it("防御側に対応するスレイヤーを装備していると、ダメージが1.5倍になる", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({ equipmentSlayer: 1 }),
+        { isSlayer: true }
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        37: 4,
+        38: 4,
+        39: 10,
+        40: 5,
+        42: 9,
+        43: 5,
+        44: 5,
+        45: 6
+      });
+    });
+
+    it("攻撃側に対応するガードを防御側が装備していると、ダメージが半分になる", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({}, { equipmentGuard: 1 }),
+        { isGuard: true }
+      );
+
+      expect(damageCountsOf(damage)).toEqual({ 13: 4, 14: 19, 15: 14, 16: 11 });
+    });
+  });
+
+  describe("攻撃力に依存する特殊能力(トッシュの真空斬・振り下ろし)", () => {
+    it("攻撃側がトッシュの真空斬のとき、攻撃側の攻撃力と防御側の防御力からダメージを求める", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({ ...toshAbilityAttackSide, abilityName: "真空斬" })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        32: 5,
+        33: 6,
+        34: 6,
+        35: 9,
+        36: 6,
+        37: 8,
+        38: 3,
+        39: 5
+      });
+    });
+
+    it("攻撃力上昇・武器ATT・他装備ATTがあると、攻撃側の攻撃力が上がる", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({
+          ...toshAbilityAttackSide,
+          abilityName: "真空斬",
+          attackBuff: 1,
+          weaponAttack: 30,
+          equipmentAttack: 10
+        })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        76: 3,
+        77: 2,
+        78: 4,
+        79: 4,
+        80: 1,
+        81: 3,
+        82: 3,
+        83: 4,
+        84: 2,
+        85: 2,
+        86: 3,
+        87: 3,
+        88: 4,
+        89: 3,
+        90: 3,
+        91: 1,
+        92: 3
+      });
+    });
+
+    it("防御側の防御力が上がると、攻撃側の魔力との能力差が縮みダメージが減る", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState(
+          { ...toshAbilityAttackSide, abilityName: "真空斬" },
+          { defenseBuff: 1, armorDefense1: 20 }
+        )
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        21: 5,
+        22: 12,
+        23: 12,
+        24: 11,
+        25: 8
+      });
+    });
+
+    it("威力が1.04の振り下ろしでは、真空斬より威力の分だけダメージが増える", () => {
+      const damage = calcAbilityAttackDamage(
+        abilityAttackState({
+          ...toshAbilityAttackSide,
+          abilityName: "振り下ろし"
+        })
+      );
+
+      expect(damageCountsOf(damage)).toEqual({
+        33: 4,
+        34: 6,
+        35: 9,
+        36: 5,
+        37: 9,
+        38: 3,
+        39: 8,
+        40: 4
       });
     });
   });
