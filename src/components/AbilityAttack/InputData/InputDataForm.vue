@@ -401,410 +401,399 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Mixins } from "vue-property-decorator";
+import { defineComponent } from "vue";
 import InputDataFormTextField from "@/components/Common/InputDataFormTextField.vue";
 import * as formItems from "@/assets/formItems";
 import * as calc from "@/util/calc";
 import * as find from "@/util/find";
 import { Mixin } from "../Mixin";
 
-@Component({
-  components: { InputDataFormTextField }
-})
-export default class InputDataForm extends Mixins(Mixin) {
-  @Prop({
-    type: String,
-    required: true,
-    validator(value: string) {
-      return ["attack", "defense"].indexOf(value) !== -1;
+export default defineComponent({
+  mixins: [Mixin],
+  components: { InputDataFormTextField },
+  props: {
+    target: {
+      type: String,
+      required: true,
+      validator: (value: string) => ["attack", "defense"].indexOf(value) !== -1
     }
-  })
-  target!: string;
+  },
+  computed: {
+    title() {
+      return this.target === "attack" ? "攻撃側データ" : "防御側データ";
+    },
+    titleIcon() {
+      return this.target === "attack"
+        ? "mdi-sword"
+        : "mdi-shield-cross-outline";
+    },
+    toolBarColor() {
+      return this.target === "attack" ? "red" : "indigo";
+    },
+    formItems() {
+      return formItems;
+    },
+    abilityNameMessage() {
+      const abilityData = find.abilityData(
+        this.sharedState.unitData[this.target].abilityName
+      );
 
-  get title() {
-    return this.target === "attack" ? "攻撃側データ" : "防御側データ";
-  }
+      if (!abilityData?.power || !abilityData?.type) {
+        return "";
+      }
 
-  get titleIcon() {
-    return this.target === "attack" ? "mdi-sword" : "mdi-shield-cross-outline";
-  }
+      return `威力:${abilityData.power} タイプ:${abilityData.type}`;
+    },
+    abilityLvMessage() {
+      const abilityData = find.abilityData(
+        this.sharedState.unitData[this.target].abilityName
+      );
 
-  get toolBarColor() {
-    return this.target === "attack" ? "red" : "indigo";
-  }
+      if (this.sharedState.unitData.attack.abilityLv === 1) {
+        return `消費MP:${abilityData.mp1}`;
+      }
 
-  get formItems() {
-    return formItems;
-  }
+      if (this.sharedState.unitData.attack.abilityLv === 2) {
+        return `消費MP:${abilityData.mp2}`;
+      }
 
-  get abilityNameMessage() {
-    const abilityData = find.abilityData(
-      this.sharedState.unitData[this.target].abilityName
-    );
+      return `消費MP:${abilityData.mp3}`;
+    },
+    baseAttackMessage() {
+      const unitData = find.unitData(
+        this.sharedState.unitData[this.target].unitName
+      );
 
-    if (!abilityData?.power || !abilityData?.type) {
-      return "";
+      if (!unitData?.basicAttackModifier) {
+        return "修正値x？";
+      }
+
+      return "修正値x" + unitData?.basicAttackModifier;
+    },
+    baseDefenseMessage() {
+      const unitData = find.unitData(
+        this.sharedState.unitData[this.target].unitName
+      );
+
+      if (!unitData?.basicDefenseModifier) {
+        return "修正値x？";
+      }
+
+      return "修正値x" + unitData?.basicDefenseModifier;
+    },
+    baseMagicMessage() {
+      const unitData = find.unitData(
+        this.sharedState.unitData[this.target].unitName
+      );
+
+      if (!unitData?.basicMagicModifier) {
+        return "修正値x？";
+      }
+
+      return "修正値x" + unitData?.basicMagicModifier;
+    },
+    isStrengthAbility() {
+      const abilityData = find.abilityData(
+        this.sharedState.unitData.attack.abilityName
+      );
+
+      return abilityData?.type === "攻撃力";
+    },
+    isMagicAbility() {
+      const abilityData = find.abilityData(
+        this.sharedState.unitData.attack.abilityName
+      );
+
+      return abilityData?.type === "魔力";
+    },
+    isEquipableArmor() {
+      const unitData = find.unitData(
+        this.sharedState.unitData[this.target].unitName
+      );
+
+      if (!unitData?.isEquipableArmor) {
+        return false;
+      }
+
+      return true;
+    },
+    isAbleManipWeekElement() {
+      return this.attackElement !== null;
+    },
+    isAbleManipResistElement() {
+      const unitData = find.unitData(
+        this.sharedState.unitData.defense.unitName
+      );
+      return (
+        this.attackElement !== null && this.attackElement !== unitData?.element
+      );
+    },
+    attackElement() {
+      const abilityData = find.abilityData(
+        this.sharedState.unitData.attack.abilityName
+      );
+      return abilityData.element;
+    },
+    unitName: {
+      get() {
+        return this.sharedState.unitData[this.target].unitName;
+      },
+      set(unitName: string) {
+        this.setUnitName(unitName, this.target);
+      }
+    },
+    abilityName: {
+      get() {
+        return this.sharedState.unitData[this.target].abilityName;
+      },
+      set(abilityName: string) {
+        this.setAbilityName(abilityName, this.target);
+      }
+    },
+    abilityLv: {
+      get() {
+        return this.sharedState.unitData[this.target].abilityLv;
+      },
+      set(abilityLv: number) {
+        this.setAbilityLv(abilityLv, this.target);
+      }
+    },
+    lv: {
+      get() {
+        return this.sharedState.unitData[this.target].lv;
+      },
+      set(lv: number) {
+        lv = calc.fixValue(lv, 1, 1000);
+        this.setLv(lv, this.target);
+      }
+    },
+    appearanceLv: {
+      get() {
+        return this.sharedState.unitData[this.target].appearanceLv;
+      },
+      set(appearanceLv: number) {
+        appearanceLv = calc.fixValue(appearanceLv, 1, 1000);
+        this.setAppearanceLv(appearanceLv, this.target);
+      }
+    },
+    appearanceLvCheckbox: {
+      get() {
+        return this.sharedState.checkbox[this.target].appearanceLv;
+      },
+      set(appearanceLv: boolean) {
+        this.setAppearanceLvCheckbox(appearanceLv, this.target);
+      }
+    },
+    baseAttack: {
+      get() {
+        return this.sharedState.unitData[this.target].baseAttack;
+      },
+      set(baseAttack: number) {
+        baseAttack = calc.fixValue(baseAttack, 1, 2499);
+        this.setBaseAttack(baseAttack, this.target);
+      }
+    },
+    baseAttackCheckbox: {
+      get() {
+        return this.sharedState.checkbox[this.target].baseAttack;
+      },
+      set(baseAttack: boolean) {
+        this.setBaseAttackCheckbox(baseAttack, this.target);
+      }
+    },
+    baseDefense: {
+      get() {
+        return this.sharedState.unitData[this.target].baseDefense;
+      },
+      set(baseDefense: number) {
+        baseDefense = calc.fixValue(baseDefense, 1, 2499);
+        this.setBaseDefense(baseDefense, this.target);
+      }
+    },
+    baseDefenseCheckbox: {
+      get() {
+        return this.sharedState.checkbox[this.target].baseDefense;
+      },
+      set(baseDefense: boolean) {
+        this.setBaseDefenseCheckbox(baseDefense, this.target);
+      }
+    },
+    baseMagic: {
+      get() {
+        return this.sharedState.unitData[this.target].baseMagic;
+      },
+      set(baseMagic: number) {
+        baseMagic = calc.fixValue(baseMagic, 1, 2499);
+        this.setBaseMagic(baseMagic, this.target);
+      }
+    },
+    baseMagicCheckbox: {
+      get() {
+        return this.sharedState.checkbox[this.target].baseMagic;
+      },
+      set(baseMagic: boolean) {
+        this.setBaseMagicCheckbox(baseMagic, this.target);
+      }
+    },
+    debuff: {
+      get() {
+        return this.sharedState.unitData[this.target].debuff;
+      },
+      set(debuff: number) {
+        this.setDebuff(debuff, this.target);
+      }
+    },
+    attackBuff: {
+      get() {
+        return this.sharedState.unitData[this.target].attackBuff;
+      },
+      set(attackBuff: number) {
+        this.setAttackBuff(attackBuff, this.target);
+      }
+    },
+    defenseBuff: {
+      get() {
+        return this.sharedState.unitData[this.target].defenseBuff;
+      },
+      set(defenseBuff: number) {
+        this.setDefenseBuff(defenseBuff, this.target);
+      }
+    },
+    magicBuff: {
+      get() {
+        return this.sharedState.unitData[this.target].magicBuff;
+      },
+      set(magicBuff: number) {
+        this.setMagicBuff(magicBuff, this.target);
+      }
+    },
+    isWeekEnemy: {
+      get() {
+        return this.sharedState.unitData[this.target].isWeekEnemy;
+      },
+      set(isWeekEnemy: boolean) {
+        this.setIsWeekEnemy(isWeekEnemy, this.target);
+      }
+    },
+    isPoison: {
+      get() {
+        return this.sharedState.unitData[this.target].isPoison;
+      },
+      set(isPoison: boolean) {
+        this.setIsPoison(isPoison, this.target);
+      }
+    },
+    isNoWeapon: {
+      get() {
+        return this.sharedState.unitData[this.target].isNoWeapon;
+      },
+      set(isNoWeapon: boolean) {
+        this.setIsNoWeapon(isNoWeapon, this.target);
+      }
+    },
+    isNoArmor: {
+      get() {
+        return this.sharedState.unitData[this.target].isNoArmor;
+      },
+      set(isNoArmor: boolean) {
+        this.setIsNoArmor(isNoArmor, this.target);
+      }
+    },
+    weaponAttack: {
+      get() {
+        return this.sharedState.unitData[this.target].weaponAttack;
+      },
+      set(weaponAttack: number) {
+        weaponAttack = calc.fixValue(weaponAttack * 5, 0, 2499) / 5;
+        this.setWeaponAttack(weaponAttack, this.target);
+      }
+    },
+    equipmentAttack: {
+      get() {
+        return this.sharedState.unitData[this.target].equipmentAttack;
+      },
+      set(equipmentAttack: number) {
+        equipmentAttack = calc.fixValue(equipmentAttack * 5, 0, 2499) / 5;
+        this.setEquipmentAttack(equipmentAttack, this.target);
+      }
+    },
+    equipmentSlayer: {
+      get() {
+        return this.sharedState.unitData[this.target].equipmentSlayer;
+      },
+      set(equipmentSlayer: number) {
+        this.setEquipmentSlayer(equipmentSlayer, this.target);
+      }
+    },
+    armorDefense1: {
+      get() {
+        return this.sharedState.unitData[this.target].armorDefense1;
+      },
+      set(armorDefense1: number) {
+        armorDefense1 = calc.fixValue(armorDefense1 * 5, 0, 2499) / 5;
+        this.setArmorDefense1(armorDefense1, this.target);
+      }
+    },
+    armorDefense2: {
+      get() {
+        return this.sharedState.unitData[this.target].armorDefense2;
+      },
+      set(armorDefense2: number) {
+        armorDefense2 = calc.fixValue(armorDefense2 * 5, 0, 2499) / 5;
+        this.setArmorDefense2(armorDefense2, this.target);
+      }
+    },
+    equipmentDefense: {
+      get() {
+        return this.sharedState.unitData[this.target].equipmentDefense;
+      },
+      set(equipmentDefense: number) {
+        equipmentDefense = calc.fixValue(equipmentDefense * 5, 0, 2499) / 5;
+        this.setEquipmentDefense(equipmentDefense, this.target);
+      }
+    },
+    equipmentGuard: {
+      get() {
+        return this.sharedState.unitData[this.target].equipmentGuard;
+      },
+      set(equipmentGuard: number) {
+        this.setEquipmentGuard(equipmentGuard, this.target);
+      }
+    },
+    isWeekElement: {
+      get() {
+        return this.sharedState.unitData[this.target].isWeekElement;
+      },
+      set(isWeekElement: boolean) {
+        this.setIsWeekElement(isWeekElement, this.target);
+      }
+    },
+    isResistElement: {
+      get() {
+        return this.sharedState.unitData[this.target].isResistElement;
+      },
+      set(isResistElement: boolean) {
+        this.setIsResistElement(isResistElement, this.target);
+      }
+    },
+    equipmentMagic: {
+      get() {
+        return this.sharedState.unitData[this.target].equipmentMagic;
+      },
+      set(equipmentMagic: number) {
+        equipmentMagic = calc.fixValue(equipmentMagic * 5, 0, 2499) / 5;
+        this.setEquipmentMagic(equipmentMagic, this.target);
+      }
+    },
+    equipmentMagicDefense: {
+      get() {
+        return this.sharedState.unitData[this.target].equipmentMagicDefense;
+      },
+      set(equipmentMagicDefense: number) {
+        equipmentMagicDefense = calc.fixValue(equipmentMagicDefense, 0, 5);
+        this.setEquipmentMagicDefense(equipmentMagicDefense, this.target);
+      }
     }
-
-    return `威力:${abilityData.power} タイプ:${abilityData.type}`;
   }
-
-  get abilityLvMessage() {
-    const abilityData = find.abilityData(
-      this.sharedState.unitData[this.target].abilityName
-    );
-
-    if (this.sharedState.unitData.attack.abilityLv === 1) {
-      return `消費MP:${abilityData.mp1}`;
-    }
-
-    if (this.sharedState.unitData.attack.abilityLv === 2) {
-      return `消費MP:${abilityData.mp2}`;
-    }
-
-    return `消費MP:${abilityData.mp3}`;
-  }
-
-  get baseAttackMessage() {
-    const unitData = find.unitData(
-      this.sharedState.unitData[this.target].unitName
-    );
-
-    if (!unitData?.basicAttackModifier) {
-      return "修正値x？";
-    }
-
-    return "修正値x" + unitData?.basicAttackModifier;
-  }
-
-  get baseDefenseMessage() {
-    const unitData = find.unitData(
-      this.sharedState.unitData[this.target].unitName
-    );
-
-    if (!unitData?.basicDefenseModifier) {
-      return "修正値x？";
-    }
-
-    return "修正値x" + unitData?.basicDefenseModifier;
-  }
-
-  get baseMagicMessage() {
-    const unitData = find.unitData(
-      this.sharedState.unitData[this.target].unitName
-    );
-
-    if (!unitData?.basicMagicModifier) {
-      return "修正値x？";
-    }
-
-    return "修正値x" + unitData?.basicMagicModifier;
-  }
-
-  get isStrengthAbility() {
-    const abilityData = find.abilityData(
-      this.sharedState.unitData.attack.abilityName
-    );
-
-    return abilityData?.type === "攻撃力";
-  }
-
-  get isMagicAbility() {
-    const abilityData = find.abilityData(
-      this.sharedState.unitData.attack.abilityName
-    );
-
-    return abilityData?.type === "魔力";
-  }
-
-  get isEquipableArmor() {
-    const unitData = find.unitData(
-      this.sharedState.unitData[this.target].unitName
-    );
-
-    if (!unitData?.isEquipableArmor) {
-      return false;
-    }
-
-    return true;
-  }
-
-  get isAbleManipWeekElement() {
-    return this.attackElement !== null;
-  }
-
-  get isAbleManipResistElement() {
-    const unitData = find.unitData(this.sharedState.unitData.defense.unitName);
-    return (
-      this.attackElement !== null && this.attackElement !== unitData?.element
-    );
-  }
-
-  get attackElement() {
-    const abilityData = find.abilityData(
-      this.sharedState.unitData.attack.abilityName
-    );
-    return abilityData.element;
-  }
-
-  get unitName() {
-    return this.sharedState.unitData[this.target].unitName;
-  }
-
-  set unitName(unitName: string) {
-    this.setUnitName(unitName, this.target);
-  }
-
-  get abilityName() {
-    return this.sharedState.unitData[this.target].abilityName;
-  }
-
-  set abilityName(abilityName: string) {
-    this.setAbilityName(abilityName, this.target);
-  }
-
-  get abilityLv() {
-    return this.sharedState.unitData[this.target].abilityLv;
-  }
-
-  set abilityLv(abilityLv: number) {
-    this.setAbilityLv(abilityLv, this.target);
-  }
-
-  get lv() {
-    return this.sharedState.unitData[this.target].lv;
-  }
-
-  set lv(lv: number) {
-    lv = calc.fixValue(lv, 1, 1000);
-    this.setLv(lv, this.target);
-  }
-
-  get appearanceLv() {
-    return this.sharedState.unitData[this.target].appearanceLv;
-  }
-
-  set appearanceLv(appearanceLv: number) {
-    appearanceLv = calc.fixValue(appearanceLv, 1, 1000);
-    this.setAppearanceLv(appearanceLv, this.target);
-  }
-
-  get appearanceLvCheckbox() {
-    return this.sharedState.checkbox[this.target].appearanceLv;
-  }
-
-  set appearanceLvCheckbox(appearanceLv: boolean) {
-    this.setAppearanceLvCheckbox(appearanceLv, this.target);
-  }
-
-  get baseAttack() {
-    return this.sharedState.unitData[this.target].baseAttack;
-  }
-
-  set baseAttack(baseAttack: number) {
-    baseAttack = calc.fixValue(baseAttack, 1, 2499);
-    this.setBaseAttack(baseAttack, this.target);
-  }
-
-  get baseAttackCheckbox() {
-    return this.sharedState.checkbox[this.target].baseAttack;
-  }
-
-  set baseAttackCheckbox(baseAttack: boolean) {
-    this.setBaseAttackCheckbox(baseAttack, this.target);
-  }
-
-  get baseDefense() {
-    return this.sharedState.unitData[this.target].baseDefense;
-  }
-
-  set baseDefense(baseDefense: number) {
-    baseDefense = calc.fixValue(baseDefense, 1, 2499);
-    this.setBaseDefense(baseDefense, this.target);
-  }
-
-  get baseDefenseCheckbox() {
-    return this.sharedState.checkbox[this.target].baseDefense;
-  }
-
-  set baseDefenseCheckbox(baseDefense: boolean) {
-    this.setBaseDefenseCheckbox(baseDefense, this.target);
-  }
-
-  get baseMagic() {
-    return this.sharedState.unitData[this.target].baseMagic;
-  }
-
-  set baseMagic(baseMagic: number) {
-    baseMagic = calc.fixValue(baseMagic, 1, 2499);
-    this.setBaseMagic(baseMagic, this.target);
-  }
-
-  get baseMagicCheckbox() {
-    return this.sharedState.checkbox[this.target].baseMagic;
-  }
-
-  set baseMagicCheckbox(baseMagic: boolean) {
-    this.setBaseMagicCheckbox(baseMagic, this.target);
-  }
-
-  get debuff() {
-    return this.sharedState.unitData[this.target].debuff;
-  }
-
-  set debuff(debuff: number) {
-    this.setDebuff(debuff, this.target);
-  }
-
-  get attackBuff() {
-    return this.sharedState.unitData[this.target].attackBuff;
-  }
-
-  set attackBuff(attackBuff: number) {
-    this.setAttackBuff(attackBuff, this.target);
-  }
-
-  get defenseBuff() {
-    return this.sharedState.unitData[this.target].defenseBuff;
-  }
-
-  set defenseBuff(defenseBuff: number) {
-    this.setDefenseBuff(defenseBuff, this.target);
-  }
-
-  get magicBuff() {
-    return this.sharedState.unitData[this.target].magicBuff;
-  }
-
-  set magicBuff(magicBuff: number) {
-    this.setMagicBuff(magicBuff, this.target);
-  }
-
-  get isWeekEnemy() {
-    return this.sharedState.unitData[this.target].isWeekEnemy;
-  }
-
-  set isWeekEnemy(isWeekEnemy: boolean) {
-    this.setIsWeekEnemy(isWeekEnemy, this.target);
-  }
-
-  get isPoison() {
-    return this.sharedState.unitData[this.target].isPoison;
-  }
-
-  set isPoison(isPoison: boolean) {
-    this.setIsPoison(isPoison, this.target);
-  }
-
-  get isNoWeapon() {
-    return this.sharedState.unitData[this.target].isNoWeapon;
-  }
-
-  set isNoWeapon(isNoWeapon: boolean) {
-    this.setIsNoWeapon(isNoWeapon, this.target);
-  }
-
-  get isNoArmor() {
-    return this.sharedState.unitData[this.target].isNoArmor;
-  }
-
-  set isNoArmor(isNoArmor: boolean) {
-    this.setIsNoArmor(isNoArmor, this.target);
-  }
-
-  get weaponAttack() {
-    return this.sharedState.unitData[this.target].weaponAttack;
-  }
-
-  set weaponAttack(weaponAttack: number) {
-    weaponAttack = calc.fixValue(weaponAttack * 5, 0, 2499) / 5;
-    this.setWeaponAttack(weaponAttack, this.target);
-  }
-
-  get equipmentAttack() {
-    return this.sharedState.unitData[this.target].equipmentAttack;
-  }
-
-  set equipmentAttack(equipmentAttack: number) {
-    equipmentAttack = calc.fixValue(equipmentAttack * 5, 0, 2499) / 5;
-    this.setEquipmentAttack(equipmentAttack, this.target);
-  }
-
-  get equipmentSlayer() {
-    return this.sharedState.unitData[this.target].equipmentSlayer;
-  }
-
-  set equipmentSlayer(equipmentSlayer: number) {
-    this.setEquipmentSlayer(equipmentSlayer, this.target);
-  }
-
-  get armorDefense1() {
-    return this.sharedState.unitData[this.target].armorDefense1;
-  }
-
-  set armorDefense1(armorDefense1: number) {
-    armorDefense1 = calc.fixValue(armorDefense1 * 5, 0, 2499) / 5;
-    this.setArmorDefense1(armorDefense1, this.target);
-  }
-
-  get armorDefense2() {
-    return this.sharedState.unitData[this.target].armorDefense2;
-  }
-
-  set armorDefense2(armorDefense2: number) {
-    armorDefense2 = calc.fixValue(armorDefense2 * 5, 0, 2499) / 5;
-    this.setArmorDefense2(armorDefense2, this.target);
-  }
-
-  get equipmentDefense() {
-    return this.sharedState.unitData[this.target].equipmentDefense;
-  }
-
-  set equipmentDefense(equipmentDefense: number) {
-    equipmentDefense = calc.fixValue(equipmentDefense * 5, 0, 2499) / 5;
-    this.setEquipmentDefense(equipmentDefense, this.target);
-  }
-
-  get equipmentGuard() {
-    return this.sharedState.unitData[this.target].equipmentGuard;
-  }
-
-  set equipmentGuard(equipmentGuard: number) {
-    this.setEquipmentGuard(equipmentGuard, this.target);
-  }
-
-  get isWeekElement() {
-    return this.sharedState.unitData[this.target].isWeekElement;
-  }
-
-  set isWeekElement(isWeekElement: boolean) {
-    this.setIsWeekElement(isWeekElement, this.target);
-  }
-
-  get isResistElement() {
-    return this.sharedState.unitData[this.target].isResistElement;
-  }
-
-  set isResistElement(isResistElement: boolean) {
-    this.setIsResistElement(isResistElement, this.target);
-  }
-
-  get equipmentMagic() {
-    return this.sharedState.unitData[this.target].equipmentMagic;
-  }
-
-  set equipmentMagic(equipmentMagic: number) {
-    equipmentMagic = calc.fixValue(equipmentMagic * 5, 0, 2499) / 5;
-    this.setEquipmentMagic(equipmentMagic, this.target);
-  }
-
-  get equipmentMagicDefense() {
-    return this.sharedState.unitData[this.target].equipmentMagicDefense;
-  }
-
-  set equipmentMagicDefense(equipmentMagicDefense: number) {
-    equipmentMagicDefense = calc.fixValue(equipmentMagicDefense, 0, 5);
-    this.setEquipmentMagicDefense(equipmentMagicDefense, this.target);
-  }
-}
+});
 </script>

@@ -176,130 +176,123 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { defineComponent } from "vue";
 import store from "../store";
 import * as find from "@/util/find";
 import * as calc from "@/util/calc";
 
-@Component({
-  components: {}
-})
-export default class DescriptionUnitData extends Vue {
-  @Prop({
-    type: String,
-    required: true,
-    validator(value: string) {
-      return ["attack", "defense"].indexOf(value) !== -1;
+export default defineComponent({
+  components: {},
+  props: {
+    target: {
+      type: String,
+      required: true,
+      validator: (value: string) => ["attack", "defense"].indexOf(value) !== -1
     }
-  })
-  target!: string;
-
-  sharedState = store.state;
-
-  get unitData() {
-    return find.unitData(this.sharedState.unitData[this.target].unitName);
-  }
-
-  get classData() {
-    return find.classData(this.unitData.className);
-  }
-
-  get hp() {
-    if (this.classData === undefined) {
-      return 0;
+  },
+  data() {
+    return {
+      sharedState: store.state
+    };
+  },
+  computed: {
+    unitData() {
+      return find.unitData(this.sharedState.unitData[this.target].unitName);
+    },
+    classData() {
+      return find.classData(this.unitData.className);
+    },
+    hp() {
+      if (this.classData === undefined) {
+        return 0;
+      }
+      return calc.calcParameter(
+        this.classData?.baseHitPoint,
+        store.state.unitData[this.target].appearanceLv,
+        this.classData?.hasAppearanceLvHitPointBonus,
+        store.state.unitData[this.target].lv,
+        this.classData?.growHitPoint
+      );
+    },
+    mp() {
+      if (this.classData === undefined) {
+        return 0;
+      }
+      return calc.calcParameter(
+        this.classData.baseMagicPoint,
+        store.state.unitData[this.target].appearanceLv,
+        this.classData?.hasAppearanceLvMagicPointBonus,
+        store.state.unitData[this.target].lv,
+        this.classData?.growMagicPoint
+      );
+    },
+    attack() {
+      return (
+        calc.fixValue(
+          this.sharedState.unitData[this.target].baseAttack *
+            this.unitData.basicAttackModifier,
+          1,
+          2499
+        ) / 5
+      );
+    },
+    defense() {
+      return (
+        calc.fixValue(
+          this.sharedState.unitData[this.target].baseDefense *
+            this.unitData.basicDefenseModifier,
+          1,
+          2499
+        ) / 5
+      );
+    },
+    magic() {
+      return (
+        calc.fixValue(
+          this.sharedState.unitData[this.target].baseMagic *
+            this.unitData.basicMagicModifier,
+          1,
+          2499
+        ) / 5
+      );
+    },
+    agility() {
+      if (this.classData === undefined) {
+        return 0;
+      }
+      const baseAgility = calc.calcParameter(
+        this.classData.baseAgility,
+        store.state.unitData[this.target].appearanceLv,
+        false,
+        store.state.unitData[this.target].lv,
+        this.classData?.growAgility
+      );
+      return (baseAgility + this.unitData.basicAgilityModifier) / 5;
+    },
+    title() {
+      return this.target === "attack" ? "攻撃側データ詳細" : "防御側データ詳細";
+    },
+    titleIcon() {
+      return this.target === "attack"
+        ? "mdi-sword"
+        : "mdi-shield-cross-outline";
+    },
+    toolBarColor() {
+      return this.target === "attack" ? "red" : "indigo";
     }
-    return calc.calcParameter(
-      this.classData?.baseHitPoint,
-      store.state.unitData[this.target].appearanceLv,
-      this.classData?.hasAppearanceLvHitPointBonus,
-      store.state.unitData[this.target].lv,
-      this.classData?.growHitPoint
-    );
-  }
-
-  get mp() {
-    if (this.classData === undefined) {
-      return 0;
+  },
+  methods: {
+    weaponType(type: string | null, skillLv: number | null) {
+      return type !== null ? `${type}(初期熟練Lv:${skillLv})` : "なし";
+    },
+    defaultEquipment(
+      defaultEquipment: string | null,
+      defaultEquipmentAttack: number | null
+    ) {
+      return defaultEquipment !== null
+        ? `${defaultEquipment}(初期ATT:${defaultEquipmentAttack})`
+        : "なし";
     }
-    return calc.calcParameter(
-      this.classData.baseMagicPoint,
-      store.state.unitData[this.target].appearanceLv,
-      this.classData?.hasAppearanceLvMagicPointBonus,
-      store.state.unitData[this.target].lv,
-      this.classData?.growMagicPoint
-    );
   }
-
-  get attack() {
-    return (
-      calc.fixValue(
-        this.sharedState.unitData[this.target].baseAttack *
-          this.unitData.basicAttackModifier,
-        1,
-        2499
-      ) / 5
-    );
-  }
-
-  get defense() {
-    return (
-      calc.fixValue(
-        this.sharedState.unitData[this.target].baseDefense *
-          this.unitData.basicDefenseModifier,
-        1,
-        2499
-      ) / 5
-    );
-  }
-
-  get magic() {
-    return (
-      calc.fixValue(
-        this.sharedState.unitData[this.target].baseMagic *
-          this.unitData.basicMagicModifier,
-        1,
-        2499
-      ) / 5
-    );
-  }
-
-  get agility() {
-    if (this.classData === undefined) {
-      return 0;
-    }
-    const baseAgility = calc.calcParameter(
-      this.classData.baseAgility,
-      store.state.unitData[this.target].appearanceLv,
-      false,
-      store.state.unitData[this.target].lv,
-      this.classData?.growAgility
-    );
-    return (baseAgility + this.unitData.basicAgilityModifier) / 5;
-  }
-
-  get title() {
-    return this.target === "attack" ? "攻撃側データ詳細" : "防御側データ詳細";
-  }
-
-  get titleIcon() {
-    return this.target === "attack" ? "mdi-sword" : "mdi-shield-cross-outline";
-  }
-
-  get toolBarColor() {
-    return this.target === "attack" ? "red" : "indigo";
-  }
-
-  weaponType(type: string | null, skillLv: number | null) {
-    return type !== null ? `${type}(初期熟練Lv:${skillLv})` : "なし";
-  }
-
-  defaultEquipment(
-    defaultEquipment: string | null,
-    defaultEquipmentAttack: number | null
-  ) {
-    return defaultEquipment !== null
-      ? `${defaultEquipment}(初期ATT:${defaultEquipmentAttack})`
-      : "なし";
-  }
-}
+});
 </script>

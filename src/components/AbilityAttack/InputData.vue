@@ -80,7 +80,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from "vue-property-decorator";
+import { defineComponent } from "vue";
 import InputDataForm from "./InputData/InputDataForm.vue";
 import { Mixin } from "./Mixin";
 import { AbilityAttackStateInterface } from "@/types/AbilityAttack/State";
@@ -94,19 +94,45 @@ interface AbilityAttackInterface {
   storeData: Array<LocalStorageAbilityAttack>;
 }
 
-@Component({
-  components: { InputDataForm }
-})
-export default class InputData extends Mixins(Mixin) {
-  abilityAttack: AbilityAttackInterface = {
-    storeData: []
-  };
-  selectedData = null;
-  dataName = "";
-  snackbarText = "";
-  snackbar = false;
-  damage = 0;
+export default defineComponent({
+  mixins: [Mixin],
+  components: { InputDataForm },
+  data() {
+    return {
+      abilityAttack: {
+        storeData: []
+      } as AbilityAttackInterface,
+      selectedData: null,
+      dataName: "",
+      snackbarText: "",
+      snackbar: false,
+      damage: 0
+    };
+  },
+  computed: {
+    minDamage() {
+      return this.sharedState.damageResult.reduce((a, b) => Math.min(a, b));
+    },
+    maxDamage() {
+      return this.sharedState.damageResult.reduce((a, b) => Math.max(a, b));
+    },
+    expected() {
+      return Math.floor(
+        this.sharedState.damageResult.reduce((a, b) => a + b) /
+          this.sharedState.damageResult.length
+      );
+    },
+    damageProbabilityMessage() {
+      let count = 0;
+      this.sharedState.damageResult.forEach(value => {
+        count += this.damage <= value ? 1 : 0;
+      });
 
+      return (
+        ((count / this.sharedState.damageResult.length) * 100).toFixed(2) + "％"
+      );
+    }
+  },
   mounted() {
     if (localStorage.getItem("abilityAttack")) {
       try {
@@ -117,106 +143,79 @@ export default class InputData extends Mixins(Mixin) {
         localStorage.removeItem("abilityAttack");
       }
     }
-  }
+  },
+  methods: {
+    saveData() {
+      if (this.dataName === "" && !this.selectedData) {
+        this.snackbarText = "データ名の入力、またはデータの選択をして下さい。";
+        this.snackbar = true;
+        return;
+      }
 
-  saveData() {
-    if (this.dataName === "" && !this.selectedData) {
-      this.snackbarText = "データ名の入力、またはデータの選択をして下さい。";
+      const state = JSON.parse(JSON.stringify(this.sharedState));
+      let index = -1;
+      if (this.dataName !== "") {
+        state["dataName"] = this.dataName;
+        index = this.abilityAttack.storeData.findIndex(
+          data => data?.dataName === this.dataName
+        );
+      } else {
+        state["dataName"] = this.selectedData;
+        index = this.abilityAttack.storeData.findIndex(
+          data => data?.dataName === this.selectedData
+        );
+      }
+      if (index !== -1) {
+        this.abilityAttack.storeData[index] = state;
+      } else {
+        this.abilityAttack.storeData.push(state);
+      }
+      const parsed = JSON.stringify(this.abilityAttack);
+      localStorage.setItem("abilityAttack", parsed);
+
+      this.dataName = "";
+      this.snackbarText = `データ名${state["dataName"]}を保存しました。`;
       this.snackbar = true;
-      return;
-    }
-
-    const state = JSON.parse(JSON.stringify(this.sharedState));
-    let index = -1;
-    if (this.dataName !== "") {
-      state["dataName"] = this.dataName;
-      index = this.abilityAttack.storeData.findIndex(
-        data => data?.dataName === this.dataName
-      );
-    } else {
-      state["dataName"] = this.selectedData;
-      index = this.abilityAttack.storeData.findIndex(
+    },
+    loadData() {
+      if (!this.selectedData) {
+        this.snackbarText = "データ名を選択して下さい。";
+        this.snackbar = true;
+        return;
+      }
+      const dataName = this.selectedData;
+      const index = this.abilityAttack.storeData.findIndex(
         data => data?.dataName === this.selectedData
       );
-    }
-    if (index !== -1) {
-      this.abilityAttack.storeData[index] = state;
-    } else {
-      this.abilityAttack.storeData.push(state);
-    }
-    const parsed = JSON.stringify(this.abilityAttack);
-    localStorage.setItem("abilityAttack", parsed);
 
-    this.dataName = "";
-    this.snackbarText = `データ名${state["dataName"]}を保存しました。`;
-    this.snackbar = true;
-  }
+      const store = clone(this.abilityAttack.storeData[index]);
+      this.setUnitDataAll(store.unitData.attack, store.unitData.defense);
+      this.setCheckboxAll(store.checkbox.attack, store.checkbox.defense);
+      this.setDamageResult(store.damageResult);
 
-  loadData() {
-    if (!this.selectedData) {
-      this.snackbarText = "データ名を選択して下さい。";
+      this.snackbarText = `データ名${dataName}を読み込みました。`;
       this.snackbar = true;
-      return;
-    }
-    const dataName = this.selectedData;
-    const index = this.abilityAttack.storeData.findIndex(
-      data => data?.dataName === this.selectedData
-    );
+    },
+    deleteData() {
+      if (!this.selectedData) {
+        this.snackbarText = "データ名を選択して下さい。";
+        this.snackbar = true;
+        return;
+      }
 
-    const store = clone(this.abilityAttack.storeData[index]);
-    this.setUnitDataAll(store.unitData.attack, store.unitData.defense);
-    this.setCheckboxAll(store.checkbox.attack, store.checkbox.defense);
-    this.setDamageResult(store.damageResult);
+      const dataName = this.selectedData;
+      const index = this.abilityAttack.storeData.findIndex(
+        data => data?.dataName === this.selectedData
+      );
+      this.abilityAttack.storeData.splice(index, 1);
+      this.selectedData = null;
 
-    this.snackbarText = `データ名${dataName}を読み込みました。`;
-    this.snackbar = true;
-  }
+      const parsed = JSON.stringify(this.abilityAttack);
+      localStorage.setItem("abilityAttack", parsed);
 
-  deleteData() {
-    if (!this.selectedData) {
-      this.snackbarText = "データ名を選択して下さい。";
+      this.snackbarText = `データ名${dataName}を削除しました。`;
       this.snackbar = true;
-      return;
     }
-
-    const dataName = this.selectedData;
-    const index = this.abilityAttack.storeData.findIndex(
-      data => data?.dataName === this.selectedData
-    );
-    this.abilityAttack.storeData.splice(index, 1);
-    this.selectedData = null;
-
-    const parsed = JSON.stringify(this.abilityAttack);
-    localStorage.setItem("abilityAttack", parsed);
-
-    this.snackbarText = `データ名${dataName}を削除しました。`;
-    this.snackbar = true;
   }
-
-  get minDamage() {
-    return this.sharedState.damageResult.reduce((a, b) => Math.min(a, b));
-  }
-
-  get maxDamage() {
-    return this.sharedState.damageResult.reduce((a, b) => Math.max(a, b));
-  }
-
-  get expected() {
-    return Math.floor(
-      this.sharedState.damageResult.reduce((a, b) => a + b) /
-        this.sharedState.damageResult.length
-    );
-  }
-
-  get damageProbabilityMessage() {
-    let count = 0;
-    this.sharedState.damageResult.forEach(value => {
-      count += this.damage <= value ? 1 : 0;
-    });
-
-    return (
-      ((count / this.sharedState.damageResult.length) * 100).toFixed(2) + "％"
-    );
-  }
-}
+});
 </script>
