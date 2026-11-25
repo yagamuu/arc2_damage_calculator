@@ -2,6 +2,7 @@ import process from "node:process";
 import { globalIgnores } from "eslint/config";
 import js from "@eslint/js";
 import pluginVue from "eslint-plugin-vue";
+import pluginVuetify from "eslint-plugin-vuetify";
 import {
   defineConfigWithVueTs,
   vueTsConfigs
@@ -21,7 +22,9 @@ export default defineConfigWithVueTs(
     "test-results/**"
   ]),
   js.configs.recommended,
-  pluginVue.configs["flat/vue2-essential"],
+  pluginVue.configs["flat/essential"],
+  // Vuetify 2・3 から削除や名前変更されたコンポーネント・props・クラスなどを検出する
+  pluginVuetify.configs["flat/recommended-v4"],
   vueTsConfigs.recommended,
   prettierRecommended,
   {

@@ -1,18 +1,18 @@
 <template>
-  <v-layout>
-    <v-tooltip top v-if="hasCheckbox">
-      <template v-slot:activator="{ on }">
+  <div class="d-flex">
+    <v-tooltip location="top" v-if="hasCheckbox">
+      <template v-slot:activator="{ props: activatorProps }">
         <v-checkbox
-          class="shrink mt-0"
-          v-on="on"
+          class="flex-grow-0 mt-0"
+          v-bind="activatorProps"
           v-model="inputDataCheckbox"
-          dense
+          density="compact"
         ></v-checkbox>
       </template>
       <span>{{ checkboxTooltip }}</span>
     </v-tooltip>
-    <v-tooltip top>
-      <template v-slot:activator="{ on }">
+    <v-tooltip location="top">
+      <template v-slot:activator="{ props: activatorProps }">
         <v-text-field
           :label="label"
           v-model="inputData"
@@ -23,14 +23,14 @@
           :min="min"
           :max="max"
           :messages="messages"
-          v-on="on"
+          v-bind="activatorProps"
           :disabled="isDisabled"
-          dense
+          density="compact"
         ></v-text-field>
       </template>
       <span v-html="tooltip"></span>
     </v-tooltip>
-  </v-layout>
+  </div>
 </template>
 
 <script lang="ts">
@@ -49,6 +49,7 @@ export default defineComponent({
     value: { type: Number, default: 0 },
     checkbox: { type: Boolean, default: false }
   },
+  emits: ["update:value", "update:checkbox"],
   data() {
     return {
       enabled: false

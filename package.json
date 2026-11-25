@@ -16,22 +16,24 @@
   "dependencies": {
     "@types/clone": "^0.1.30",
     "clone": "^2.1.2",
-    "vue": "^2.7.16",
-    "vuetify": "^2.6.10"
+    "vue": "^3.5.46",
+    "vuetify": "^4.3.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.1",
     "@types/node": "^24.19.2",
-    "@vitejs/plugin-vue2": "^2.3.4",
+    "@vitejs/plugin-vue": "^6.0.11",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.9.0",
     "eslint": "^10.15.0",
     "eslint-plugin-vue": "^10.12.1",
+    "eslint-plugin-vuetify": "^2.7.3",
     "prettier": "^3.10.1",
     "typescript": "~5.9.3",
     "vite": "^7.3.8",
+    "vite-plugin-vuetify": "^2.1.3",
     "vitest": "^5.1.1",
-    "vue-tsc": "3.0.11"
+    "vue-tsc": "^3.3.14"
   }
 }
