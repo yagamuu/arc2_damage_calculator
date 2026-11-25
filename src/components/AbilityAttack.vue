@@ -12,18 +12,20 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { defineComponent } from "vue";
 import InputData from "./AbilityAttack/InputData.vue";
 import Description from "./AbilityAttack/Description.vue";
 
-@Component({
-  components: { InputData, Description }
-})
-export default class AbilityAttack extends Vue {
-  open = [0];
-  panels = [
-    { header: "データ入力", component: InputData },
-    { header: "データ詳細", component: Description }
-  ];
-}
+export default defineComponent({
+  components: { InputData, Description },
+  data() {
+    return {
+      open: [0],
+      panels: [
+        { header: "データ入力", component: InputData },
+        { header: "データ詳細", component: Description }
+      ]
+    };
+  }
+});
 </script>

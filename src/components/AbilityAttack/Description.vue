@@ -12,11 +12,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { defineComponent } from "vue";
 import DescriptionUnitData from "./Description/DescriptionUnitData.vue";
 
-@Component({
+export default defineComponent({
   components: { DescriptionUnitData }
-})
-export default class Description extends Vue {}
+});
 </script>
