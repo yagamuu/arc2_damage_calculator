@@ -6,7 +6,6 @@
     "strict": true,
     "jsx": "preserve",
     "resolveJsonModule": true,
-    "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
