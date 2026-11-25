@@ -10,6 +10,7 @@
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
     "noEmit": true,
+    "skipLibCheck": true,
     "types": ["vite/client", "vuetify", "node"],
     "paths": {
       "@/*": ["./src/*"]
@@ -19,6 +20,6 @@
   "include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "*.config.ts"],
   "exclude": ["node_modules"],
   "vueCompilerOptions": {
-    "target": 2.7
+    "target": 3.5
   }
 }
